@@ -1,0 +1,377 @@
+---
+title: "Open-Access-Monitoring-Dashboards mit Quarto"
+logo: images/open_access_thumbnail.png
+format:
+  dashboard:
+    scrolling: true
+    embed-resources: true
+server: shiny # instructs Quarto to run a Shiny Server behind the document, you need this to use shiny components which allow interactivity
+theme: morph
+---
+
+```{r}
+#| label: load libraries
+#| context: setup
+
+# if you want to render this document locally you might need to install the respective packages first. To do this go to the console tab in the lower left pane and copy and past the following line after the ">" and then hit enter: install.packages(c("here", "tidyverse", "plotly", "DT","shiny","bslib","bsicons")). The former render button is now called run document, press this to get a preview of the dashboard
+
+library(here)
+library(tidyverse)
+library(plotly)
+library(DT)
+library(shiny)
+library(bslib)
+library(bsicons)
+```
+
+```{r}
+#| label: load data
+#| context: setup
+
+df <- read_csv(here("data","unigoe.csv"))
+```
+
+
+```{r}
+#| label: define oa colours
+
+colors <- c('diamond' = 'rgba(204, 204, 255, 1)',
+            'gold' = 'rgba(255,215,0, 1)',
+            'hybrid' = 'rgba(204, 229, 255, 1)',
+            'green' = 'rgba(34,139,34, 0.9)',
+            'bronze' = 'rgba(255, 128, 0, 0.9)',
+            'closed' = 'rgba(224, 224, 224, 1)')
+```
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| eval: false
+
+# Run lines 54-57 to get the top publishers per oa status based on the number of publications. To run this you first need to run the load libraries and load data code chunks. Go to the upper right corner of the respective chunks and press the little green play button. To run the code below press the same green play button in this chunk after you ran the other chunks. The output will be displayed in the console pane below.
+df %>%
+  group_by(primary_location.source.host_organization_name, open_access.oa_status) %>%
+  summarise(n=n()) %>%
+  arrange(desc(n))
+```
+
+
+#  {.sidebar}
+
+![](images/Open_Access_logo.png)
+
+--------------------------------------------------------------
+
+**Einrichtungsübersicht**
+
+|                       |                                     |
+|-----------------------|-------------------------------------|
+| **Einrichtung**       | Georg-August-Universität Göttingen  |
+| **Publikationsjahre** | `{r} range(df$publication_year)`|
+
+--------------------------------------------------------------
+
+**Beschäftigungsstruktur in 2023**
+
+|                                   |  Gesamt   | UMG  |
+|-----------------------------------|:---------:|:----:|
+| **Beschäftigte gesamt**           | 13.058    |	8.105|
+| **Professor:innen**               |	515       |	111  |
+| **Wiss. Personal (o.Prof)**       |	3.941     |	1.849|
+| **Wiss. unterstützendes Personal**|	8.602     |	6.145|
+
+
+
+
+# Open-Access-Monitoring 
+
+## {.toolbar}
+
+```{r}
+selectInput('year', 'Publication Year', c("All", unique(df$publication_year)), selected = "All") 
+# this gives you a toolbar above the value boxes with a drop-down menu to select the publication year
+```
+
+## Row 
+
+```{r}
+value_box(
+  title = "Open Access Share",
+  value = textOutput("value_box_open_access_share"),
+  showcase = bs_icon("percent"),
+  theme = "light"
+)
+```
+
+```{r}
+value_box(
+  title = "Total Number of Publications",
+  value = textOutput("value_box_total_publications"),
+  showcase = bs_icon("book-fill"),
+  theme = "light"
+)
+```
+
+```{r}
+value_box(
+  title = "Total Number of Open Publications",
+  value = textOutput("value_box_open_publications"),
+  showcase = bs_icon("book-half"),
+  theme = "light"
+)
+```
+
+```{r}
+#| context: server
+
+# The functions below define what happens to the values in the value boxes if you select different publication years in the toolbar. The values will interactively change according to the year selected and display the values for one specific year or for all publication year depending on your selection
+
+# Reactive expression to filter data based on selected year
+  filtered_data <- reactive({
+    if (input$year == "All") {
+      df
+    } else {
+      df[df$publication_year == as.numeric(input$year), ]
+    }
+  })
+  
+# Open Access Share
+  output$value_box_open_access_share <- renderText({
+    filtered_df <- filtered_data()
+    if (n_distinct(filtered_df$id) == 0) {
+      "N/A"
+    } else {
+      result <- round(sum(filtered_df$open_access.is_oa) / n_distinct(filtered_df$id) * 100, 2)
+    }
+  })
+  
+# Total Number of Publications
+  output$value_box_total_publications <- renderText({
+    filtered_df <- filtered_data()
+    result <- n_distinct(filtered_df$id)
+    as.character(result)
+  })
+  
+# Total Number of Open Publications
+  output$value_box_open_publications <- renderText({
+    filtered_df <- filtered_data()
+    result <- sum(filtered_df$open_access.is_oa)
+    as.character(result)
+  })
+```
+
+
+## Row {height=10%}
+
+```{r}
+oa_share <- df %>%
+            group_by(publication_year,open_access.oa_status) %>%
+            summarise(n=n()) %>%
+            mutate(share = round(n /sum(n) * 100,2)) %>%
+            mutate(open_access.oa_status = fct_relevel(open_access.oa_status,"diamond", "gold", "hybrid","green", "bronze", "closed")) %>%
+            arrange(open_access.oa_status)
+
+oa_status_labels <- c("diamond", "gold", "hybrid","green", "bronze", "closed")
+
+fig <- plot_ly(oa_share, x = ~share, y= ~publication_year,  type = 'bar', orientation='h', 
+               marker = list(color = colors[oa_share$open_access.oa_status],
+                      line = list(color = 'rgb(248, 248, 249)', width = 1)),
+               hovertemplate = paste0("<b>Open Access Status:</b> ", oa_share$open_access.oa_status, "<br>",
+                              "<b>Share:</b> ", oa_share$share, "%", "<br>",
+                              "<b>Publication Year:</b> ", oa_share$publication_year, "<extra></extra>")) %>% 
+              layout(title = list(text='Open Access Share per Type and Year', y = 0.95, x = 0.01, xanchor = 'left', yanchor =  'top', 
+                                  font = list(family = 'Arial', size = 25, color = 'rgb(67, 67, 67)'), showarrow = FALSE),
+                     xaxis = list(title = "", showgrid = FALSE, showline = FALSE, showticklabels = FALSE, zeroline = FALSE),
+                     yaxis = list(title = "", showgrid = FALSE, showline = FALSE, showticklabels = FALSE, zeroline = FALSE),
+                     barmode = 'stack',
+                     margin = list(l = 100, r = 5, t = 80, b = 80),
+                     showlegend = FALSE) %>% 
+              add_annotations(xref = 'x', yref = 'paper',
+                              x = cumsum(oa_share$share[oa_share$publication_year==2023]) - oa_share$share[oa_share$publication_year==2023] /2, y = -0.1,
+                              text = oa_status_labels,
+                              font = list(family = 'Arial', size = 12,
+                                          color = 'rgb(67, 67, 67)'),
+                              showarrow = FALSE, align = 'center') %>% 
+              #add_annotations(xref = 'x', yref = 'y',
+               #               x = cumsum(oa_share$share[oa_share$publication_year==2024]) - oa_share$share[oa_share$publication_year==2024] /2, y = oa_share$publication_year[oa_share$publication_year==2024],
+                #              text = paste(oa_share$share[oa_share$publication_year==2024], '%'),
+                #              font = list(family = 'Arial', size = 12,
+                #                          color = 'rgb(67, 67, 67)'),
+                #                          showarrow = FALSE) %>%
+              add_annotations(xref = 'x', yref = 'y',
+                              x = cumsum(oa_share$share[oa_share$publication_year==2023]) - oa_share$share[oa_share$publication_year==2023] /2, y = oa_share$publication_year[oa_share$publication_year==2023],
+                              text = paste(oa_share$share[oa_share$publication_year==2023], '%'),
+                              font = list(family = 'Arial', size = 12,
+                                          color = 'rgb(67, 67, 67)'),
+                                          showarrow = FALSE) %>%
+              add_annotations(xref = 'paper', yref = 'y',
+                              x = -0.05, y = oa_share$publication_year,
+                              text = oa_share$publication_year,
+                              font = list(family = 'Arial', size = 12,
+                                          color = 'rgb(67, 67, 67)'),
+                                          showarrow = FALSE, align = 'right')  
+fig
+```
+
+## Row {height=20%}
+
+### Column 
+
+```{r}
+publisher <- df %>%
+  mutate(primary_location.source.host_organization_name = str_replace(primary_location.source.host_organization_name,"Elsevier BV","Elsevier")) %>%
+  mutate(primary_location.source.host_organization_name = str_replace(primary_location.source.host_organization_name,"Springer Science\\+Business Media|Nature Portfolio|Springer Nature","Springer Nature")) %>%
+  group_by(primary_location.source.host_organization_name,open_access.oa_status) %>%
+  summarise(n=n(), .groups = 'drop') %>%
+  mutate(total = sum(n)) %>%
+  mutate(share = round(n /total * 100,2)) %>%
+  group_by(primary_location.source.host_organization_name) %>%
+  mutate(n_pub = sum(n)) %>%
+  ungroup() %>%
+  mutate(share_pub = round(n_pub/total *100,2)) %>%
+  mutate(open_access.oa_status = fct_relevel(open_access.oa_status,"diamond", "gold", "hybrid","green", "bronze", "closed")) %>%
+  arrange(open_access.oa_status) %>%
+  filter(primary_location.source.host_organization_name %in% c("Elsevier","Springer Nature","Wiley"))
+
+fig2 <- plot_ly(publisher, x = ~share, y= ~primary_location.source.host_organization_name,  type = 'bar', orientation='h', 
+                name = publisher$open_access.oa_status,
+                marker = list(color = colors[publisher$open_access.oa_status],
+                      line = list(color = 'rgb(248, 248, 249)', width = 1)),
+                hovertemplate = paste0("<b>Publisher:</b> ", publisher$primary_location.source.host_organization_name, "<br>",
+                              "<b>Open Access Status:</b> ", publisher$open_access.oa_status, "<br>",
+                              "<b>Share OA Type Total Publication Volume:</b> ", publisher$share, "%", "<br>",
+                              "<b>Share Total Publication Volume:</b> ", publisher$share_pub, "%")) %>% 
+                layout(title = list(text='Open Access Share Top 3 Publisher', y = 0.95, x = 0.01, xanchor = 'left', yanchor =  'top', 
+                                  font = list(family = 'Arial', size = 25, color = 'rgb(67, 67, 67)'), showarrow = FALSE),
+                     xaxis = list(title = "",tickvals = seq(0, 20, by = 5), ticktext = paste0(seq(0, 20, by = 5), "%")),
+                     yaxis = list(title = ""),
+                     legend = list(orientation = 'h', traceorder = "normal" ,x = 0.05, y = -0.2),
+                     barmode = 'stack',
+                     margin = list(l = 80, r = 80, t = 80, b = 80))
+fig2
+```
+
+
+
+```{r}
+domain <- df %>%
+  group_by(primary_topic.domain.display_name, open_access.oa_status) %>%
+  summarise(n=n()) %>%
+  ungroup() %>%
+  mutate(share = round(n /sum(n) * 100,2)) %>%
+  group_by(primary_topic.domain.display_name) %>%
+  mutate(n_dom = sum(n)) %>%
+  ungroup() %>%
+  mutate(share_dom = round(n_dom/sum(n) *100,2)) %>%
+  filter(!is.na(primary_topic.domain.display_name)) %>%
+  mutate(open_access.oa_status = fct_relevel(open_access.oa_status,"diamond", "gold", "hybrid","green", "bronze", "closed")) %>%
+  arrange(open_access.oa_status)
+
+fig3 <- plot_ly(domain, x = ~share, y= ~primary_topic.domain.display_name,  type = 'bar', orientation='h', 
+                name = domain$open_access.oa_status,
+                marker = list(color = colors[domain$open_access.oa_status],
+                      line = list(color = 'rgb(248, 248, 249)', width = 1)),
+                hovertemplate = paste0("<b>Field:</b> ", domain$primary_topic.domain.display_name, "<br>",
+                              "<b>Open Access Status:</b> ", domain$open_access.oa_status, "<br>",
+                              "<b>Share OA Type Total Publication Volume:</b> ", domain$share, "%", "<br>",
+                              "<b>Share Total Publication Volume:</b> ", domain$share_dom, "%")) %>% 
+                layout(title = list(text='Open Access Share per Field', y = 0.95, x = 0.01, xanchor = 'left', yanchor =  'top', 
+                                  font = list(family = 'Arial', size = 25, color = 'rgb(67, 67, 67)'), showarrow = FALSE),
+                     xaxis = list(title = "",tickvals = seq(0, 40, by = 5), ticktext = paste0(seq(0, 40, by = 5), "%")),
+                     yaxis = list(title = ""),
+                     legend = list(orientation = 'h', traceorder = "normal" ,x = 0.05, y = -0.2),
+                     barmode = 'stack',
+                     margin = list(l = 80, r = 80, t = 80, b = 80))
+fig3
+```
+
+### Column {.tabset}
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+categories <- c("diamond", "gold", "hybrid", "green", "bronze", "closed")
+
+journals <- df %>%
+  group_by(primary_location.source.display_name, open_access.oa_status, primary_location.license) %>%
+  summarise(n = n()) %>%
+  ungroup() %>%
+  group_by(primary_location.source.display_name) %>%
+  mutate(total_n = sum(n),
+         cc_total = sum(grepl("CC", primary_location.license, ignore.case = TRUE))) %>%
+  mutate(oa_share = round(n / total_n * 100, 2)) %>%
+  mutate(cc_share = round(cc_total/ total_n * 100,2)) %>%
+  ungroup() %>%
+  filter(!is.na(primary_location.source.display_name))
+
+top_journals <- journals %>%
+  split(.$open_access.oa_status) %>%
+  map(~ .x %>%
+        select(primary_location.source.display_name, n, total_n, oa_share, cc_share) %>%
+        rename(
+          Journal = primary_location.source.display_name,
+          `Article Volume` = n,
+          `Total Article Volume` = total_n,
+          `% OA Type` = oa_share,
+          `% OA with CC` = cc_share
+        ) %>%
+        arrange(desc(`Article Volume`)) %>%
+        slice(1:20))
+
+diamond <- top_journals$diamond
+gold <- top_journals$gold
+hybrid <- top_journals$hybrid
+green <- top_journals$green
+bronze <- top_journals$bronze
+closed <- top_journals$closed
+```
+
+```{r}
+#| title: diamond
+datatable(diamond)
+```
+
+```{r}
+#| title: gold
+datatable(gold)
+```
+
+```{r}
+#| title: hybrid
+datatable(hybrid)
+```
+
+```{r}
+#| title: green
+datatable(green)
+```
+
+```{r}
+#| title: bronze
+datatable(bronze)
+```
+
+```{r}
+#| title: closed
+datatable(closed)
+```
+
+
+# Daten {scrolling=FALSE}
+
+```{r}
+#| title: Data Overview
+overview <- df %>%
+  select(doi,title,publication_year, open_access.oa_status, primary_location.source.display_name, primary_location.source.host_organization_name) %>%
+  rename(DOI = doi,
+         Title = title,
+         `Publication Year` = publication_year,
+         `OA Status`= open_access.oa_status,
+         Journal = primary_location.source.display_name,
+         Publisher = primary_location.source.host_organization_name)
+datatable(overview, options = list(dom = 'ftp', paging = TRUE))
+```

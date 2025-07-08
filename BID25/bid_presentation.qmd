@@ -1,0 +1,345 @@
+---
+title: "Open-Access-Monitoring Dashboards mit Quarto"
+subtitle: "Hands-on Lab, 9. Bibliothekskongress, 24.06.2025, Bremen "
+title-slide-attributes: 
+  data-notes: 'speaker notes on title slide, open speaker view by pressing s key'
+  data-background-image: images/by.svg
+  data-background-size: 100px, cover
+  data-background-position: 50% 90%, center
+author:
+  - name: Sophia Dörner
+    email: sophia.doerner@sub.uni-goettingen.de
+    orcid: https://orcid.org/0000-0001-8747-3422
+    affiliations:
+      - name: SUB Göttingen
+footer: "[https://oa-datenpraxis.de/](https://oa-datenpraxis.de/)"
+format: 
+  revealjs: 
+    slide-number: true
+    preview-links: true
+    #chalkboard: 
+    #  buttons: false
+    #  theme: whiteboard
+    embed-resources: true
+    header-includes: |
+      <link rel="stylesheet" media="screen" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" type="text/css"/>
+    logo: images/logo_oa_datenpraxis.png
+    theme: presentation.scss
+    css: presentation.css
+    mainfont: Barlow
+---
+
+## Agenda
+
+- Was ist Quarto?
+- Aufbau Quarto Dashboards
+- Hands-on
+
+
+::: {.notes}
+Speaker notes
+:::
+
+
+## Überblick Quarto {.smaller}
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Was ist Quarto?
+
+> [An open-source scientific and technical publishing system](https://quarto.org/)
+
+
+Was kann Quarto?
+
+- Erstellen verschiedener Dokumenttypen
+- Erstellen dynamischer Inhalte mit Python, R, Julia oder Observable
+- Exportieren von Inhalten in verschiedenen Exportformaten
+- Veröffentlichung von Inhalten via Posit Connect, Confluence, etc.
+
+:::
+
+::: {.column width="50%"}
+
+Vorteile von Quarto
+
+- Unterstützt mehrere (Programmier-)Sprachen
+- Gleiche Befehle für Kernfunktionalitäten
+- Betriebsystemunabhängig
+- Ermöglicht „Single-Source-Publishing“ --> Erstellen verschiedener Dokumentformate aus einer einzigen Quelldatei
+
+:::
+::::
+
+::: {.notes}
+
+Was ist Quarto?
+
+Quarto ist ein open-source scientific and technical publishing system, also ein offenes Werkzeug zur Erstellung wissenschaftlicher und technischer Dokumente.
+
+Was kann Quarto?
+
+- Quarto erlaubt verschiedene Dokumenttypen zu erstellen, dazu gehören u.a. Artikel, Präsentationen, Webseiten oder auch Dashboards. 
+- in den Dokumenten können statische Inhalte (z.B. Text) und dynamische Inhalte (via Code) integriert werden 
+
+
+Vorteile von Quarto
+
+- Auch wenn dynamische Inhalte unterschiedlich erzeugt werden können, sind Funktionalitäten wie die Erstellung der Dokumentstruktur, Styling, Zitationen unabhängig davon.
+- Quarto bedient sich für Kernfunktionalitäten sowohl der YAML-Syntaxt als auch der Markdown-Syntax
+- Zu den Exportformaten gehören u.a.: HTML, PDF, MS Word, PowerPoint
+:::
+
+## Wie sieht ein Quarto Dokument aus?
+
+
+::: {.r-stack}
+
+````{.yaml code-line-numbers=|1-7|9,11-13|15|16-19|22-30}
+---
+title: "Quarto Beispiel"
+format:
+    pdf: default
+    html: 
+      self-contained: true
+---
+
+## Hallo Quarto
+
+Quarto ermöglicht Inhalte und ausführbaren Code in einem 
+Dokument zu kombinieren. Mehr Informationen zu Quarto 
+unter <https://quarto.org>.
+
+```{{r}}
+#| label: data-frame
+#| echo: false
+#| message: false
+#| warning: false
+
+
+AWI <- c(1435,0,0,17,0,9)
+DESY <- c(0,2526,0,7,26,47)
+DKFZ <- c(0,0,3549,0,13,10)
+DLR <- c(17,7,0,2031,0,31)
+row_names <- c("AWI","DESY","DKFZ","DLR","DZNE","FZJ")
+
+data.set <- data.frame(AWI, DESY, DKFZ, DLR, row.names = row_names)
+
+data.set
+```
+````
+
+![](images/beispiel.png){.fragment fig-align="center"}
+
+:::
+
+::: {.notes}
+
+- Am Anfang eines Quarto Dokuments steht in der Regel ein YAML header, In diesem werden globale Einstellungen für das Dokument vorgenommen und Dokumentmetadaten erfasst. Die Syntax hat die Form von key value pairs. Text wird in den meisten Fällen in Anführungszeichen erfasst. 
+- Das Beispiel zeigt einen sehr dezimierten header, hier wurden lediglich der Titel und die Ausgabeformate angegeben. Im Beispiel wird sowohl eine HTML als auch eine PDF Datei aus ein und demselben Quarto Dokument erstellt.
+- Im body des Dokuments wird Markdown-Syntax verwendet, um das Dokument zu strukurieren. Hier wurde eine Überschrift mittels Markdown eingefügt. Überschriften werden durch Hashtags eingeleitet. Auch Freitext kann problemlos in das Dokument geschrieben werden.
+- Das Beispiel zeigt auch, wie code integriert werden kann. sog code chunks werden durch drei einfache anführungszeichen begrenzt. In geschweiften klammern wird die code sprache angegeben, hier R, damit der richtige interpreter für die ausführung des code genutzt wird. 
+- den code chunks können ebnefalls optionen übergeben werden, eingeleitet durch hashtag und senkrechten strich. hier wurde ein label vergeben, das ist hilfreich für cross-referencing und es werden meldungen unterdrückt.
+- der code erstellt einen dataframe und ruft diesen am ende auf. 
+
+gerendert sieht das beispiel dann wie folgt aus
+
+- dies ist die HTML version, wir sehen aber auch rechts oben in der ecke, dass ebenfalls eine PDF version erzeugt wurde. so wie es am anfang im YAML header definiert wurde.
+
+das erstmal grob dazu, wie ein Quarto Dokument in etwa aussehen kann.
+:::
+
+## Was kann mit Quarto erstellt werden? {.smaller}
+
+:::: {.columns}
+
+::: {.column style="width:40%; font-size: 130%;"}
+
+::: {.fragment .semi-fade-out fragment-index=1}
+
+![](images/kodierung.png){height=4% width=4% style="display: initial; margin: .5 auto; vertical-align:middle"} Websites/Blogs
+
+:::
+
+
+![](images/datenbericht.png){height=4% width=4% style="display: initial; margin: .5 auto; vertical-align:middle"} Dashboards
+
+::: {.fragment .semi-fade-out fragment-index=1}
+
+![](images/artikel.png){height=4% width=4% style="display: initial; margin: .5 auto; vertical-align:middle"} Artikel
+
+![](images/prasentation.png){height=4% width=4% style="display: initial; margin: .5 auto; vertical-align:middle"} Präsentationen
+
+![](images/bucherstapel.png){height=5% width=5% style="display: initial; margin: .5 auto; vertical-align:middle"} Bücher
+
+![](images/artikel_report.png){height=5% width=5% style="display: initial; margin: .5 auto; vertical-align:middle"} Reports
+::: 
+
+:::
+
+::: {.column width="60%"}
+
+::: {.fragment fragment-index=1}
+![](images/dashboard.png)
+:::
+
+:::
+:::
+
+
+::: {.notes}
+
+Welche Dokumenttypen können nun alles mit Quarto erstellt werden?
+
+eigentlich alles, was gerade im wissenschaftlichen Bereich hilfreich ist. Diese Präsentation habe ich übrigens auch mit Quarto erstellt
+
+Wir konzentrieren uns im weiteren jedoch ausschließlich auf Dashboards, hier auch ein kleiner vorgeschmack auf das was wir erstellen wollen
+
+:::
+
+## Quarto Dashboards
+
+- Gemeinsame Darstellung von Visualisierungen, Tabellen und Text
+- Können folgenden Komponenten enthalten:
+    - Navigation Bar
+    - Cards, Sidebars, Toolbars
+    - Pages, Rows, Columns, Tabsets 
+    
+::: {.notes}
+
+Quarto Dashboards eignen sich zur gemeinsamen Darstellung von Visualisierungen, Tabellen und Text
+
+Quarto Dashboards setzen sich aus folgenden Komponenten zusammen (wobei nicht alle zwingen vorhanden sein müssen)
+
+Navigationsleiste: Darin können enthalten sein Icon/Logo, Titel, Autor:innenangaben und Links zu Unterseiten (falls hinzugefügt).
+
+Cards etc: Cards sind Container für Diagramme, Datenanzeigen oder Text. Seitenleisten und Symbolleisten können z.B. zur Darstellung von Eingaben in interaktiven Dashboards verwendet, aber auch statische Inhalte darstellen. 
+
+Pages etc: Seiten, Zeilen und Spalten werden durch Markdown-Überschriften definiert (mit optionalen Attributen zur Steuerung von Höhe, Breite usw.). Tabsets können verwendet werden, um den Inhalt innerhalb einer Zeile oder Spalte weiter zu unterteilen.
+:::
+
+## Quarto Dashboards {auto-animate=true auto-animate-easing="ease-in-out"}
+
+- Inhalte werden in **Cards** organisiert
+- Inhalte können statisch oder interaktiv sein
+- Inhalte können als Text eingegeben oder mittels Code erzeugt werden
+
+::: {.r-hstack}
+::: {data-id="box1" auto-animate-delay="0" style="background: #2553a3; width: 200px; height: 150px; margin: 10px; border: 3px solid #000;"}
+:::
+
+::: {data-id="box2" auto-animate-delay="0.1" style="background: #4285df; width: 200px; height: 150px; margin: 10px; border: 3px solid #000;"}
+:::
+
+::: {data-id="box3" auto-animate-delay="0.2" style="background: #cbd8e8; width: 200px; height: 150px; margin: 10px; border: 3px solid #000;"}
+:::
+:::
+
+::: {.notes}
+
+Cards sind die grundlegende Einheit der Anzeige in Quarto Dashboards (zentrale Elemente)
+
+diese können statisch oder interaktiv sein und lassen sich durch Texteingabe oder mittels Code erzeugen
+:::
+
+## Quarto Dashboards {.smaller auto-animate=true auto-animate-easing="ease-in-out"}
+
+Dashboards Cards sind in Reihen (rows) und ggf. Spalten (columns) angeordnet
+
+::: {.r-stack}
+
+::: {style="width: 235px; height: 20px; margin-top: 0px; position: absolute; left: 280px; text-align: center;"}
+column
+:::
+
+::: {style="width: 235px; height: 20px; margin-top: 0px; padding: 0px; position: absolute; right: 280px; text-align: center;"}
+column
+:::
+
+::: {data-id="box0" auto-animate-delay="0" style="background: #fff; width: 235px; height: 145px; margin-top: 100px; position: absolute; left: 0px; text-align: center;"}
+row
+:::
+
+::: {data-id="box1" auto-animate-delay="0" style="background: #2553a3; width: 235px; height: 145px; margin-top: 70px; position: absolute; left: 275px; border: 3px solid #000;"}
+:::
+
+::: {data-id="box2" style="background: #4285df; width: 235px; height: 145px; margin-top: 70px; position: absolute; right: 275px; border: 3px solid #000;"}
+:::
+
+::: {data-id="box04" auto-animate-delay="0" style="background: #fff; width: 235px; height: 145px; margin-top: 350px; position: absolute; left: 0px; text-align: center;"}
+row
+:::
+
+::: {data-id="box3" style="background: #cbd8e8; width: 500px; height: 250px; margin-top: 250px; border: 3px solid #000;"}
+:::
+:::
+
+::: {.notes}
+Reihen und Spalten werden mittels Markdown-Überschriften definiert und beeinflussen die Anordnung der Cards
+
+definiert man weder rows noch columns explizit würde jede neue card in eine neue Zeile gesetzt werden. 
+
+:::
+
+## Quarto Dashboards {.smaller auto-animate=true auto-animate-easing="ease-in-out"}
+
+Seiten, Tabsets und Seitenleisten ermöglichen umfangreichere Layouts
+
+::: {.r-stack}
+
+::: {data-id="box5" auto-animate-delay="0" style="background: #0d1d42; width: 675px; height: 30px; margin-top: 10px; position: absolute; left: 95px; border: 3px solid #000;"}
+:::
+
+::: {style="width: 50px; height: 20px; margin-top: 15px; position: absolute; left: 275px; text-align: center; border: 3px solid #fff;"}
+:::
+
+::: {style="width: 50px; height: 20px; margin-top: 15px; position: absolute; left: 350px; text-align: center; border: 3px solid #fff;"}
+:::
+
+::: {data-id="box4" auto-animate-delay="0" style="background: #0d1d42; width: 150px; height: 430px; margin-top: 70px; position: absolute; right: 800px; border: 3px solid #000;"}
+:::
+
+::: {data-id="box1" auto-animate-delay="0" style="background: #2553a3; width: 235px; height: 145px; margin-top: 70px; position: absolute; left: 275px; border: 3px solid #000;"}
+:::
+
+::: {data-id="box2" style="background: #4285df; width: 235px; height: 145px; margin-top: 70px; position: absolute; right: 275px; border: 3px solid #000;"}
+:::
+
+
+::: {data-id="box3" style="background: #cbd8e8; width: 500px; height: 250px; margin-top: 250px; border: 3px solid #000;"}
+:::
+:::
+
+::: {.notes}
+jedes Dashboard hat automatisch eine Navigationsleise
+
+ob ein Dashboard mehrere Seiten oder auch eine Seitenleiste hat, ist individuell
+:::
+
+## Open-Access-Monitoring Dashboard
+
+![](images/dashboard.png)
+
+::: footer
+
+:::
+
+::: {.notes}
+für dieses Lab habe ich dieses Dashboard als Beispiel erstellt. 
+
+ich habe versucht möglichst viele Funktionen zu integrieren und hoffe wenn wir jetzt mit dem Hands on teil loslegen wird das eben erzählte noch ein bisschen klarer
+:::
+
+## Hands-on
+
+1. Bitte in einem Tab folgendes Etherpad öffnen [https://tinyurl.com/mpkzjbbn](https://tinyurl.com/mpkzjbbn)
+2. Bitte in einem anderen Tab zu [https://posit.cloud](https://posit.cloud) gehen und einloggen
+
+---
+
+## Vielen Dank für Ihre Aufmerksamkeit! {style="text-align: center;"}
+
+![](images/logo_oa_datenpraxis.png){width=283px, height=283px}
+
+[info.oa-datenpraxis@listserv.dfn.de](info.oa-datenpraxis@listserv.dfn.de)

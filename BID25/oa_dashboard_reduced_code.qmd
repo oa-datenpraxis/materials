@@ -1,0 +1,292 @@
+---
+title: "Open-Access-Monitoring-Dashboards mit Quarto"
+logo: images/open_access_thumbnail.png
+format:
+  dashboard:
+    scrolling: true
+    embed-resources: true
+theme: morph
+---
+
+```{r}
+#| label: load libraries
+
+# if you want to render this document locally you might need to install the respective packages first. To do this go to the console tab in the lower left pane and copy and past the following line after the ">" and then hit enter: install.packages(c("here", "tidyverse", "plotly", "DT"))
+
+library(here)
+library(tidyverse)
+library(plotly)
+library(DT)
+```
+
+```{r}
+#| label: load data
+
+df <- read_csv(here("data","unigoe.csv"), n_max = 2000) #adjust the file name and if you run this locally remove ", n_max=2000" if you want to use more lines from the data file
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| eval: false
+
+# OA related columns in OpenAlex Data set, just fyi and if you want to explore other data related to oa
+primary_location.source.display_name
+primary_location.source.is_in_doaj
+primary_location.source.is_core
+primary_location.source.host_organization_name
+primary_location.license
+apc_list.value_usd
+primary_topic.subfield.display_name
+primary_topic.field.display_name
+primary_topic.domain.display_name
+```
+
+
+
+```{r}
+#| label: define oa colours
+
+colors <- c('diamond' = 'rgba(204, 204, 255, 1)',
+            'gold' = 'rgba(255,215,0, 1)',
+            'hybrid' = 'rgba(204, 229, 255, 1)',
+            'green' = 'rgba(34,139,34, 0.9)',
+            'bronze' = 'rgba(255, 128, 0, 0.9)',
+            'closed' = 'rgba(224, 224, 224, 1)')
+```
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| eval: false
+
+# Run lines 67-70 to get the top publishers per oa status based on the number of publications. To run this you first need to run the load libraries and load data code chunks. Go to the upper right corner of the respective chunks and press the little green play button. To run the code below press the same green play button in this chunk after you ran the other chunks. The output will be displayed in the console pane below.
+df %>%
+  group_by(primary_location.source.host_organization_name, open_access.oa_status) %>%
+  summarise(n=n()) %>%
+  arrange(desc(n))
+```
+
+
+#  {.sidebar}
+
+![](images/Open_Access_logo.png)
+
+--------------------------------------------------------------
+
+**Einrichtungsübersicht**
+
+|                       |                                     |
+|-----------------------|-------------------------------------|
+| **Einrichtung**       | Georg-August-Universität Göttingen  |
+| **Publikationsjahre** | `{r} range(df$publication_year)`|
+
+--------------------------------------------------------------
+
+**Beschäftigungsstruktur in 2023**
+
+|                                   |  Gesamt   | UMG  |
+|-----------------------------------|:---------:|:----:|
+| **Beschäftigte gesamt**           | 13.058    |	8.105|
+| **Professor:innen**               |	515       |	111  |
+| **Wiss. Personal (o.Prof)**       |	3.941     |	1.849|
+| **Wiss. unterstützendes Personal**|	8.602     |	6.145|
+
+
+
+
+# Open-Access-Monitoring 
+
+## Row 
+
+
+```{r}
+#| content: valuebox
+#| title: "Total Open Access Share"
+#| color: light
+#| icon: "percent"
+
+round(sum(df$open_access.is_oa) / n_distinct(df$id) *100, 2)
+
+```
+
+```{r}
+#| content: valuebox
+#| title: "Total Publications"
+#| color: light
+#| icon: "book-fill"
+
+n_distinct(df$id)
+
+```
+
+```{r}
+#| content: valuebox
+#| title: "Total Open Publications"
+#| color: light
+#| icon: "book-half"
+
+sum(df$open_access.is_oa[df$open_access.is_oa == TRUE])
+
+```
+
+
+## Row 
+
+<!--
+instead of producing graphics via code you can include images generated outside of Quarto as we did with the thumbnail and the logo in the sidebar. Here we also link the image using markdown syntax 
+-->
+
+[![Abbildung aus dem Open Access Monitor des FZ Jülich auf Basis der OpenAlex Daten für die Georg-August-Universität Göttingen 2023-2024](images/oa_monitor.png)](https://open-access-monitor.de/open-access)
+
+## Row
+
+```{r}
+# Calculate open access share
+oa_share <- df %>%
+            group_by(publication_year,open_access.oa_status) %>%
+            summarise(n=n()) %>%
+            mutate(share = round(n /sum(n) * 100,2)) %>%
+            mutate(open_access.oa_status = fct_relevel(open_access.oa_status,"diamond", "gold", "hybrid","green", "bronze", "closed")) %>%
+            arrange(open_access.oa_status)
+
+# Define colors for each open access status using hexadecimal color codes
+oa_status_colors <-  c(diamond = "#00BFFF", gold = "#FFD700", hybrid = "#FF6347", green = "#32CD32", bronze = "#CD7F32", closed = "#808080")
+
+# Create the ggplot
+ggplot(oa_share, aes(x = publication_year, y = share, fill = open_access.oa_status)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = oa_status_colors) +
+  scale_x_discrete(limits = c(2023,2024)) +
+  labs(title = "Open Access Share per Type and Year",
+       x = "Publication Year",
+       y = "Open Access Share (%)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  guides(fill = guide_legend(title = "Open Access Status"))
+```
+
+## Row
+
+```{r}
+# Calculate share per publisher and select the first 18 lines = top 3 publisher
+publisher <- df %>%
+  mutate(primary_location.source.host_organization_name = str_replace(primary_location.source.host_organization_name,"Elsevier BV","Elsevier")) %>%
+  mutate(primary_location.source.host_organization_name = str_replace(primary_location.source.host_organization_name,"Springer Science\\+Business Media|Nature Portfolio|Springer Nature","Springer Nature")) %>%
+  group_by(primary_location.source.host_organization_name,open_access.oa_status) %>%
+  summarise(n=n(), .groups = 'drop') %>%
+  mutate(total = sum(n)) %>%
+  mutate(share = round(n /total * 100,2)) %>%
+  group_by(primary_location.source.host_organization_name) %>%
+  mutate(n_pub = sum(n)) %>%
+  ungroup() %>%
+  mutate(share_pub = round(n_pub/total *100,2)) %>%
+  mutate(open_access.oa_status = fct_relevel(open_access.oa_status,"diamond", "gold", "hybrid","green", "bronze", "closed")) %>%
+  arrange(desc(share_pub)) %>%
+  slice(1:18)
+
+# Create the ggplot
+ggplot(publisher, aes(x = primary_location.source.host_organization_name, y = share, fill = open_access.oa_status)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = oa_status_colors) +
+  scale_x_discrete(breaks = publisher$primary_location.source.host_organization_name, labels = publisher$primary_location.source.host_organization_name) +
+  labs(title = "Open Access Share per Top 3 Publisher and Type",
+       x = "Publisher",
+       y = "Open Access Share (%)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  guides(fill = guide_legend(title = "Open Access Status"))
+```
+
+
+## Row {.tabset}
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+categories <- c("diamond", "gold", "hybrid", "green", "bronze", "closed")
+
+journals <- df %>%
+  group_by(primary_location.source.display_name, open_access.oa_status, primary_location.license) %>%
+  summarise(n = n()) %>%
+  ungroup() %>%
+  group_by(primary_location.source.display_name) %>%
+  mutate(total_n = sum(n),
+         cc_total = sum(grepl("CC", primary_location.license, ignore.case = TRUE))) %>%
+  mutate(oa_share = round(n / total_n * 100, 2)) %>%
+  mutate(cc_share = round(cc_total/ total_n * 100,2)) %>%
+  ungroup() %>%
+  filter(!is.na(primary_location.source.display_name))
+
+top_journals <- journals %>%
+  split(.$open_access.oa_status) %>%
+  map(~ .x %>%
+        select(primary_location.source.display_name, n, total_n, oa_share, cc_share) %>%
+        rename(
+          Journal = primary_location.source.display_name,
+          `Article Volume` = n,
+          `Total Article Volume` = total_n,
+          `% OA Type` = oa_share,
+          `% OA with CC` = cc_share
+        ) %>%
+        arrange(desc(`Article Volume`)) %>%
+        slice(1:20))
+
+diamond <- top_journals$diamond
+gold <- top_journals$gold
+hybrid <- top_journals$hybrid
+green <- top_journals$green
+bronze <- top_journals$bronze
+closed <- top_journals$closed
+```
+
+```{r}
+#| title: diamond
+datatable(diamond)
+```
+
+```{r}
+#| title: gold
+datatable(gold)
+```
+
+```{r}
+#| title: hybrid
+datatable(hybrid)
+```
+
+```{r}
+#| title: green
+datatable(green)
+```
+
+```{r}
+#| title: bronze
+datatable(bronze)
+```
+
+```{r}
+#| title: closed
+datatable(closed)
+```
+
+
+# Daten {scrolling=FALSE}
+
+```{r}
+#| title: Data Overview
+overview <- df %>%
+  select(doi,title,publication_year, open_access.oa_status, primary_location.source.display_name, primary_location.source.host_organization_name) %>%
+  rename(DOI = doi,
+         Title = title,
+         `Publication Year` = publication_year,
+         `OA Status`= open_access.oa_status,
+         Journal = primary_location.source.display_name,
+         Publisher = primary_location.source.host_organization_name)
+datatable(overview, options = list(dom = 'ftp', paging = TRUE))
+```

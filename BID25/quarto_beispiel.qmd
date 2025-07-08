@@ -1,0 +1,31 @@
+---
+title: "Quarto Beispiel"
+format:
+    pdf: default
+    html: 
+      self-contained: true
+---
+
+## Hallo Quarto
+
+Quarto ermöglicht Inhalte und ausführbaren Code in einem 
+Dokument zu kombinieren. Mehr Informationen zu Quarto 
+unter <https://quarto.org>.
+
+```{r}
+#| label: data-frame
+#| echo: false
+#| message: false
+#| warning: false
+
+
+AWI <- c(1435,0,0,17,0,9)
+DESY <- c(0,2526,0,7,26,47)
+DKFZ <- c(0,0,3549,0,13,10)
+DLR <- c(17,7,0,2031,0,31)
+row_names <- c("AWI","DESY","DKFZ","DLR","DZNE","FZJ")
+
+data.set <- data.frame(AWI, DESY, DKFZ, DLR, row.names = row_names)
+
+data.set
+```

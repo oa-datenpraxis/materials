@@ -1,0 +1,46 @@
+.reveal .slide-logo {
+    z-index: 2;
+    height: unset !important;
+    bottom: unset !important;
+    width: auto !important;
+    height: 20% !important;
+    max-width: unset !important;
+    max-height: unset !important;
+    padding: .3em .3em 0em 0em;
+}
+
+.slide-number {
+    bottom: 14px !important;
+    left: auto !important;
+    top: unset !important;
+    color: #2454a4 !important;
+  }
+  
+.reveal .quarto-title-block .quarto-title-authors .quarto-title-author .quarto-title-author-name {
+  margin-bottom: .1rem;
+  font-size: .43em;
+}
+
+.reveal .quarto-title-block .quarto-title-authors .quarto-title-author .quarto-title-affiliation {
+  font-size: .4em;
+  margin-top: 0px;
+  margin-bottom: 8px;
+}
+
+.reveal .quarto-title-block .quarto-title-authors .quarto-title-author .quarto-title-author-email {
+  margin-top: 0px;
+  margin-bottom: .4em;
+  font-size: .3em;
+}
+
+.reveal .slide {
+    margin-top: 1.6em;
+  }
+  
+.reveal .footer {
+  color: #2454a4;
+}
+
+h1.title {
+  font-size: 90px;
+}

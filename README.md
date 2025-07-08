@@ -8,6 +8,8 @@ The project supports practitioners in administration, libraries and other servic
 
 The project is a joint effort by the Berlin School of Library and Information Science at Humboldt-Universität zu Berlin, the Helmholtz Open Science Office and the Göttingen State and University Library (SUB Göttingen).
 
+For more information on OA Datenpraxis please visit our website at: [https://oa-datenpraxis.de/](https://oa-datenpraxis.de/)
+
 ## Materials
 
 Part of the OA Datenpraxis project is to design, test and iteratively develop training courses with a specific focus on data practice to shape the OA transformation. The target group includes professionals in the field of OA transformation and research administration. Not all data analysis aspects can be covered rather, the aim is to introduce open and science-oriented tools and procedures and to test their application.

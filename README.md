@@ -26,7 +26,7 @@ This folder contains materials from the Hands-on Lab "Open-Access-Monitoring Das
 - oa_dashboard.qmd: Quarto dashboard file we build hands on during the Hands-on Lab
 - oa_dashboard_reduced_code.qmd: Additional Quarto dashboard file adapted with reduced code showing how to create a reduced version of the dashboard with less code
 - oa_dashboard_with_shiny.qmd: Additional Quarto dashboard file adapted to show how to create interactive content using [Shiny](https://shiny.posit.co/)
-- data: Folder containing the csv data files used during the Hands-on Lab based on data from OpenAlex
+- data: Folder containing the smaller sized csv data files used during the Hands-on Lab based on data from OpenAlex
 - images: Folder containing all images used for the dashboard and the presentation
 - BID25.Rproj: RStudio project file for the material
 - *.html: rendered html versions of the Quarto files

@@ -1,0 +1,160 @@
+---
+title: "Musternotebook"
+format: html
+---
+
+# Credentials in .Renviron speichern
+
+```zsh
+file.edit("~/.Renviron")
+```
+
+```
+openalexR.apikey = YOUR_API_KEY
+```
+
+# Libraries laden
+
+```{r}
+library(openalexR)
+library(readr)
+library(tidyr)
+library(dplyr)
+```
+
+
+# OpenAlex-API abfragen
+
+```{r}
+df <- openalexR::oa_fetch(
+  entity = "works",
+  institutions.ror = "032000t02",
+  is_paratext = FALSE,
+  is_retracted = FALSE,
+  abstract = FALSE,
+  from_publication_date = "2026-01-01",
+  to_publication_date = "2026-04-01",
+  options = list(select = c("doi", "authorships","publication_year", "primary_location")),
+  output = "tibble",
+  paging = "cursor"
+)
+```
+
+# Dataframe explorieren
+
+```{r}
+df
+```
+
+```{r}
+glimpse(df)
+```
+
+# PAUSE (10 Minuten)
+
+
+# Qualitätsprobleme
+
+```{r}
+df |> 
+  dplyr::select(host_organization_name)
+```
+
+```{r}
+df |> 
+  dplyr::count(host_organization_name) |> 
+  dplyr::arrange(desc(n))
+```
+
+# Publisher Disambiguierung
+
+```{r}
+child_id <- readr::read_csv("data/child_id.csv")
+parent_id <- readr::read_csv("data/parent_id.csv")
+```
+
+```{r}
+child_id
+parent_id
+```
+
+
+
+```{r}
+df_metrics <- df |>  
+              dplyr::left_join(child_id, by = join_by(host_organization == child_id), na_matches = "never") |> 
+              dplyr::left_join(parent_id, by = join_by(host_organization == parent_id), na_matches = "never") |> 
+              dplyr::mutate(publisher = dplyr::coalesce(publisher, publisher_x)) |> 
+              dplyr::mutate(host_organization_name = dplyr::coalesce(publisher, host_organization_name)) |> 
+              dplyr::select(-c(publisher_x,publisher))
+```
+
+
+```{r}
+df |> 
+  dplyr::count(host_organization_name) |> 
+  dplyr::arrange(desc(n))
+
+df_metrics |> 
+  dplyr::count(host_organization_name) |> 
+  dplyr::arrange(desc(n))
+```
+
+```{r}
+df_metrics |> 
+  filter(is.na(host_organization_name))
+```
+
+# Metriken
+
+## Anzahl an OA-Publikationen insgesamt
+
+```{r}
+df_metrics |> 
+  dplyr::count(is_oa)
+```
+
+## OA-Anteil
+
+```{r}
+df_metrics |> 
+  dplyr::summarise(
+    total_articles = n(),
+    oa_articles = sum(is_oa, na.rm = TRUE),
+    oa_share = round(oa_articles / total_articles * 100, 2)
+  )
+```
+
+
+## Anzahl an OA-Publikationen pro Verlag
+
+```{r}
+df_metrics |> 
+  dplyr::count(host_organization_name, is_oa) |> 
+  dplyr::arrange(desc(n))
+```
+
+## OA-Anteil pro Verlag
+
+```{r}
+df_metrics |> 
+  dplyr::group_by(host_organization_name) |> 
+  dplyr::summarise(
+    total_articles = n(),
+    oa_articles = sum(is_oa, na.rm = TRUE),
+    oa_share = round(oa_articles / total_articles * 100, 2)
+  ) |> 
+  dplyr::arrange(desc(total_articles))
+```
+
+
+# Add-On: Wie viele first authors von der Einrichtung sind in den Daten verzeichnet
+
+```{r}
+df_metrics |> 
+  unnest(authorships) |> 
+  filter(author_position == "first") |> 
+  unnest(affiliations, names_sep = "_") |> 
+  filter(affiliations_ror == "https://ror.org/032000t02")
+```
+

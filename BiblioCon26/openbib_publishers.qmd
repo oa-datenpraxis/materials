@@ -1,0 +1,50 @@
+---
+title: "OPENBIB Publishers"
+format: html
+---
+
+# Libraries laden
+
+Packages bieten Zusatzfunktionalitäten zu dem, was base R mitbringt. Sie können genutzt werden nachdem sie einerseits installiert (über den Befehl `install.packages("package_name")`) und andererseits geladen wurden. Um packages zu laden wird in R der Befehl `library(package_name)` genutzt.
+
+```{r}
+library(readr)
+library(tidyr)
+library(dplyr)
+```
+
+# OPENBIB Verlagsdaten laden
+
+Im Rahmen des vom Kompetenznetzwerk Bibliometrie koordinierten Projekts [OPENBIB](https://open-bibliometrics.de/) entstanden [kuratierte offene Metadaten](https://doi.org/10.5281/zenodo.15308679) auf Basis von Daten aus OpenAlex. Zu den offenen Metadaten gehören unter anderem [Verlagsdaten](http://www.open-bibliometrics.de/posts/20250903-PublisherNormalization/), die insbesondere die Ansetzung von Verlagsnamen standardisieren, um verlässliche Analysen auf Verlagsebene zu ermöglichen. Wir nutzen von den durch OPENBIB bereitgestellten Dateien die *publishers_relation.csv*, welche verschiedene Verlagsnamen (z.B. Imprints) einem Verlagshaus zuordnet. Diese Datei laden wir zunächst mit Hilfe der `read_csv` Funktion:
+
+```{r}
+openbib_publishers <- readr::read_csv("data/publishers_relation.csv")
+```
+
+# Datenvorbereitung
+
+Die *publishers_relation.csv* bildet auch zeitliche Entwicklungen (z.B. merger) einiger Verlage ab. Für unseren Anwendungsfall wollen wir jedoch nur die aktuellen Namensansetzung der Verlagshäuser (*parent_name*), weshalb wir alle Einträge ausschließen, die einen Eintrag in der Spalte *last_date* aufweisen. 
+
+```{r}
+publishers <- openbib_publishers |> 
+  dplyr::filter(is.na(last_date))
+```
+
+
+
+```{r}
+child_id <- publishers |> 
+            dplyr::select(child_id, publisher = parent_name) |> 
+            dplyr::distinct()
+
+readr::write_csv(child_id, "data/child_id.csv")
+```
+
+```{r}
+parent_id <- publishers |> 
+             dplyr::select(parent_id, publisher_x = parent_name) |> 
+             dplyr::filter(!is.na(parent_id)) |> 
+             dplyr::distinct()
+
+readr::write_csv(parent_id, "data/parent_id.csv")
+```

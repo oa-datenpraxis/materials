@@ -5,7 +5,7 @@ format: html
 
 # Libraries laden
 
-Packages bieten Zusatzfunktionalitäten zu dem, was base R mitbringt. Sie können genutzt werden nachdem sie einerseits installiert (über den Befehl `install.packages("package_name")`) und andererseits geladen wurden. Um packages zu laden wird in R der Befehl `library(package_name)` genutzt.
+Packages bieten Zusatzfunktionalitäten zu dem, was base R mitbringt. Sie können genutzt werden, nachdem sie einerseits installiert (über den Befehl `install.packages("package_name")`) und andererseits geladen wurden. Um packages zu laden wird in R der Befehl `library(package_name)` genutzt.
 
 ```{r}
 library(readr)
@@ -30,7 +30,9 @@ publishers <- openbib_publishers |>
   dplyr::filter(is.na(last_date))
 ```
 
+Um die aktuelle Namenansetzung der Verlagshäuser (*parent_name*) mit unseren von OpenAlex abgerufenen Daten zu verknüpfen, nutzen wir die in unserem *publishers* data frame vorhandenen IDs: *child_id* und *parent_id*. Beide IDs entsprechen den OpenAlex-IDs der jeweiligen Verlage oder Imprints. Da wir nicht sicher vorhersagen können, ob ein Verlagseintrag in den OpenAlex-Daten als Imprint (also als child) oder als übergeordnetes Verlagshaus (also als parent) erfasst ist, führen wir die Zuordnung zweistufig durch: Zunächst erstellen wir eine Zuordnungstabelle, die die *child_id* auf den zugehörigen Verlagsnamen (*parent_name*) abbildet. Anschließend erstellen wir eine zweite Tabelle, die die *parent_id* auf den *parent_name* abbildet. Diese beiden Dateien werden separat gespeichert, damit wir bei der späteren Datenverknüpfung beide Möglichkeiten berücksichtigen können, unabhängig davon, ob die OpenAlex-Daten den Verlag als Kind oder als Elternteil erfassen. Dadurch erhöhen wir die Wahrscheinlichkeit, dass möglichst viele Einträge korrekt zugeordnet werden.
 
+Der folgende R-Code erstellt die beiden Zuordnungstabellen und speichert sie als CSV-Dateien. Die Verwendung der `distinct()` Funktion stellt sicher, dass jede ID nur einmal vorkommt, was die spätere Verknüpfung vereinfacht und doppelte Einträge vermeidet:
 
 ```{r}
 child_id <- publishers |> 

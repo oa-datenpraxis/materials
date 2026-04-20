@@ -102,7 +102,7 @@ df_metrics |>
 
 ```{r}
 df_metrics |> 
-  filter(is.na(host_organization_name))
+  dplyr::filter(is.na(host_organization_name))
 ```
 
 # Metriken
@@ -152,9 +152,9 @@ df_metrics |>
 
 ```{r}
 df_metrics |> 
-  unnest(authorships) |> 
-  filter(author_position == "first") |> 
-  unnest(affiliations, names_sep = "_") |> 
-  filter(affiliations_ror == "https://ror.org/032000t02")
+  tidyr::unnest(authorships) |> 
+  dplyr::filter(author_position == "first") |> 
+  tidyr::unnest(affiliations, names_sep = "_") |> 
+  dplyr::filter(affiliations_ror == "https://ror.org/032000t02")
 ```
 

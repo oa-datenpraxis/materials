@@ -30,9 +30,18 @@ This folder contains materials from the Hands-on Lab "Open-Access-Monitoring Das
 - oa_dashboard_with_shiny.qmd: Additional Quarto dashboard file adapted to show how to create interactive content using [Shiny](https://shiny.posit.co/)
 - data: Folder containing the smaller sized csv data files used during the Hands-on Lab based on data from OpenAlex
 - images: Folder containing all images used for the dashboard and the presentation
-- BID25.Rproj: RStudio project file for the material
+- BID25.Rproj: RStudio project file for the materials
 - *.html: rendered html versions of the Quarto files
 
+### BiblioCon26
+
+This folder contains materials from the Hands-on Lab "How to: Das Publikationsaufkommen Ihrer Einrichtung mit einer offenen Datenquelle erfassen" held at the 114th BiblioCon in Berlin:
+
+- data: Folder containing publisher data from the [OPENBIB project](https://doi.org/10.5281/zenodo.15308679) and pre-processed files used in the Musternotebook to standardize publisher names
+- Musternotebook.qmd: Quarto file containing the code we build hands on during the Hands-on lab
+- openbib_publishers.qmd: Quarto file pre-processing the OPENBIB publisher data
+- BiblioCon26.Rproj: RStudio project file for the material 
+- *.html: rendered html versions of the Musternotebook file
 
 ## How can I get involved?
 

@@ -2,13 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.27">
+<meta name="generator" content="quarto-1.9.37">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>Musternotebook</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -61,15 +64,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="Musternotebook_files/libs/clipboard/clipboard.min.js"></script>
 <script src="Musternotebook_files/libs/quarto-html/quarto.js" type="module"></script>
 <script src="Musternotebook_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="Musternotebook_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="Musternotebook_files/libs/quarto-html/popper.min.js"></script>
 <script src="Musternotebook_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="Musternotebook_files/libs/quarto-html/anchor.min.js"></script>
 <link href="Musternotebook_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="Musternotebook_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="Musternotebook_files/libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="Musternotebook_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="Musternotebook_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="Musternotebook_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="Musternotebook_files/libs/bootstrap/bootstrap-138a6193a3bd40baf1e627da441a4734.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -101,14 +103,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="credentials-in-.renviron-speichern" class="level1">
 <h1>Credentials in .Renviron speichern</h1>
+<p>Die <code>.Renviron</code> ist eine einfache Textdatei, die R beim Start automatisch einliest. Man kann dort Umgebungsvariablen im key-value-Format definieren, also nach dem Muster <code>key = value</code>. Sie eignet sich besonders für sensible Informationen wie API-Keys, aber auch für R-spezifische Einstellungen.</p>
+<p>Warum sollte man nicht einfach einen API-Key ins Skript schreiben? Schreibt man den eigenen API-Key direkt ins Skript und lädt das Projekt dann z.B. auf GitHub hoch, kann jeder den Key sehen und ggf. auch nutzen. Die <code>.Renviron</code>-Datei liegt außerhalb des Projektordners und wird nicht mit hochgeladen, der Key bleibt also privat.</p>
+<p>Wie funktioniert der Zugriff auf einen API-Key in der <code>.Renviron</code>-Datei? R lädt die <code>.Renviron</code> automatisch beim Start und macht alle darin definierten Variablen als Umgebungsvariablen verfügbar. Viele Pakete suchen automatisch im Hintergrund nach bestimmten Umgebungsvariablen und verwenden diese, ohne dass man z.B. den API-Key explizit einer Funktion übergeben muss. Man ruft lediglich die Funktion auf, und sie holt sich z.B. den API-Key selbst.</p>
+<p>Zum Bearbeiten der <code>.Renviron</code>-Datei verwenden wir folgenden Befehl in der Console, den wir mit Enter ausführen:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode zsh code-with-copy"><code class="sourceCode zsh"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">file.edit</span><span class="er">(</span><span class="st">"~/.Renviron"</span><span class="kw">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Die <code>.Renviron</code>-Datei öffnet sich im Editor und wir fügen unseren API-Key in folgendem Format ein:</p>
+<pre><code>openalexR.apikey = YOUR_API_KEY</code></pre>
+<p>Anschließend speichern wir die <code>.Renviron</code>-Datei per Klick auf das Diskettensymbol und können das Fenster schließen.</p>
 </section>
-<section id="libraries-laden" class="level1">
-<h1>Libraries laden</h1>
+<section id="packages-installieren-und-laden" class="level1">
+<h1>Packages installieren und laden</h1>
+<p>Packages bieten Zusatzfunktionalitäten zu dem, was base R mitbringt. Sie können genutzt werden, nachdem sie einerseits installiert und andererseits geladen wurden. Installieren lädt das package einmalig herunter, laden macht das installierte package für die aktuelle R-Sitzung verfügbar. Packages müssen nur einmal installiert werden, jedoch jedes Mal neu geladen werden, wenn R gestartet wird, denn R lädt nicht automatisch alle installierten packages.</p>
+<p>Zum Installieren von packages nutzen wir den <code>install.packages</code> Befehl. Wir können den Befehl entweder in einem Code Chunk ausführen, oder in der Console:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">"openalexR"</span>,<span class="st">"readr"</span>,<span class="st">"tidyr"</span>,<span class="st">"dplyr"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Um packages zu laden wird in R der Befehl <code>library(package_name)</code> genutzt. Wir laden die zuvor installierten packages:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(openalexR)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(openalexR)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
 Attaching package: 'dplyr'</code></pre>
@@ -123,6 +137,378 @@ Attaching package: 'dplyr'</code></pre>
 
     intersect, setdiff, setequal, union</code></pre>
 </div>
+</div>
+</section>
+<section id="openalex-api-abfragen" class="level1">
+<h1>OpenAlex-API abfragen</h1>
+<p>Um die OpenAlex-API abzufragen nutzen wir die <code>oa_fetch</code>-Funktion aus dem openalexR package. Diese Funktion erstellt die Abfrage, sendet diese an die API und konvertiert das Ergebnis in ein tibble (eine Art data frame) bzw. data frame. Je nach Entität, die man abfragen möchte, gibt es unterschiedliche Filter, um die Suchergebnisse einzuschränken, siehe <a href="https://docs.ropensci.org/openalexR/articles/Filters.html" class="uri">https://docs.ropensci.org/openalexR/articles/Filters.html</a>.</p>
+<p>Wir möchten Publikationsdaten abfragen, daher konzentrieren wir uns auf die <em>works</em>-Entität. Wir identifizieren Publikationen unserer Einrichtungen anhand ihrer ROR-ID. Paratexte (z.B. Titelseiten von Zeitschriften) und retracted Publikationen werden ausgeschlossen. Wir laden für dieses Notebook nur ausgewählte Felder, und zwar: DOI, Autor:innen-Angaben, Erscheinungsjahr, primärer Veröffentlichungsort (z.B. Zeitrschrift) und Publikationstyp. Das Ergebnis wird als tibble gespeichert (ein modernes data frame Format in R). Das <code>paging = "cursor"</code> sorgt dafür, dass auch große Ergebnismengen zuverlässig und effizient abgerufen werden.</p>
+<p>Wir schränken auf einen relativ kurzen Veröffentlichungszeitraum ein, um die Ergebnismenge klein zu halten. Solltet ihr lokal Daten für ein ganzes Jahr abfragen wollen, so könnt ihr auch über den Filter <code>publication_year = 2025</code> auf ein bestimmtes Jahr (hier bspw. 2025) eingrenzen. Wenn ihr keinen der Filter <code>from_publication_date</code>, <code>to_publication_date</code>, oder <code>publication_year</code> nutzt, könnt ihr alle Daten, die mit der ROR-ID verknüpft sind abfragen.</p>
+<p>Der Pfeil (<code>&lt;-</code>) ist in R der Zuweisungsoperator. Er weist das Ergebnis der rechten Seite der Variable auf der linken Seite zu. In diesem Fall wird das Ergebnis der Abfrage unter dem Namen <em>df</em> gespeichert. Dieses Objekt lässt sich dann über den Namen aufrufen.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> openalexR<span class="sc">::</span><span class="fu">oa_fetch</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">entity =</span> <span class="st">"works"</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">institutions.ror =</span> <span class="st">"032000t02"</span>, <span class="co">#ROR-ID der Uni Ulm</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">is_paratext =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">is_retracted =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">from_publication_date =</span> <span class="st">"2025-10-01"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">to_publication_date =</span> <span class="st">"2026-04-01"</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">list</span>(<span class="at">select =</span> <span class="fu">c</span>(<span class="st">"doi"</span>, <span class="st">"authorships"</span>,<span class="st">"publication_year"</span>, <span class="st">"primary_location"</span>,<span class="st">"type"</span>)),</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="st">"tibble"</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">paging =</span> <span class="st">"cursor"</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="data-frame-explorieren" class="level1">
+<h1>Data frame explorieren</h1>
+<p>Wir wollen uns nun einen Überblick zu unserem data frame (unser df Objekt) verschaffen. Zunächst rufen wir unseren data frame anhand des Namens auf:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,425 × 14
+   authorships doi    publication_year type  is_oa source_display_name source_id
+   &lt;list&gt;      &lt;chr&gt;             &lt;int&gt; &lt;chr&gt; &lt;lgl&gt; &lt;chr&gt;               &lt;chr&gt;    
+ 1 &lt;tibble&gt;    https…             2025 arti… FALSE New England Journa… https://…
+ 2 &lt;tibble&gt;    https…             2025 arti… FALSE New England Journa… https://…
+ 3 &lt;tibble&gt;    https…             2025 arti… TRUE  TrAC Trends in Ana… https://…
+ 4 &lt;tibble&gt;    https…             2025 arti… TRUE  Cell                https://…
+ 5 &lt;tibble&gt;    https…             2025 revi… TRUE  EClinicalMedicine   https://…
+ 6 &lt;tibble&gt;    https…             2025 arti… TRUE  Science             https://…
+ 7 &lt;tibble&gt;    https…             2025 arti… TRUE  Nature Communicati… https://…
+ 8 &lt;tibble&gt;    https…             2025 arti… TRUE  Science Advances    https://…
+ 9 &lt;tibble&gt;    https…             2025 arti… TRUE  Catalysts           https://…
+10 &lt;tibble&gt;    https…             2025 arti… TRUE  Nature Medicine     https://…
+# ℹ 1,415 more rows
+# ℹ 7 more variables: issn_l &lt;chr&gt;, host_organization &lt;chr&gt;,
+#   host_organization_name &lt;chr&gt;, landing_page_url &lt;chr&gt;, pdf_url &lt;chr&gt;,
+#   license &lt;chr&gt;, version &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>Standardmäßig werden die ersten 10 Zeilen ausgegeben und es werden so viele Spalten angezeigt, wie auf den Bildschirm passen. Man kann jedoch über den Pfeil im header weitere Spalten anzeigen lassen und über die Seitennavigation bis zu 1.000 Zeilen inspizieren.</p>
+<p>Einen kompakteren Überblick über den Datensatz bietet die <code>glimpse</code>-Funktion, wir übergeben der Funktion als Argument den Namen unseres data frame:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 1,425
+Columns: 14
+$ authorships            &lt;list&gt; [&lt;tbl_df[53 x 7]&gt;], [&lt;tbl_df[25 x 7]&gt;], [&lt;tbl_…
+$ doi                    &lt;chr&gt; "https://doi.org/10.1056/nejmoa2515458", "https…
+$ publication_year       &lt;int&gt; 2025, 2025, 2025, 2025, 2025, 2025, 2025, 2025,…
+$ type                   &lt;chr&gt; "article", "article", "article", "article", "re…
+$ is_oa                  &lt;lgl&gt; FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRU…
+$ source_display_name    &lt;chr&gt; "New England Journal of Medicine", "New England…
+$ source_id              &lt;chr&gt; "https://openalex.org/S62468778", "https://open…
+$ issn_l                 &lt;chr&gt; "0028-4793", "0028-4793", "0165-9936", "0092-86…
+$ host_organization      &lt;chr&gt; "https://openalex.org/P4310320239", "https://op…
+$ host_organization_name &lt;chr&gt; "Massachusetts Medical Society", "Massachusetts…
+$ landing_page_url       &lt;chr&gt; "https://doi.org/10.1056/nejmoa2515458", "https…
+$ pdf_url                &lt;chr&gt; NA, NA, NA, NA, NA, NA, "https://www.nature.com…
+$ license                &lt;chr&gt; NA, NA, "cc-by", "cc-by", "cc-by", "cc-by", "cc…
+$ version                &lt;chr&gt; "publishedVersion", "publishedVersion", "publis…</code></pre>
+</div>
+</div>
+<p>Die Ausgabe zeigt uns die Anzahl der Zeilen und Spalten, die Namen und Datentypen aller Spalten sowie die ersten paar Werte je Spalte an. Das ist praktisch, um schnell zu verstehen, was im Datensatz steckt.</p>
+</section>
+<section id="pause-10-minuten" class="level1">
+<h1>PAUSE (10 Minuten)</h1>
+</section>
+<section id="qualitätsprobleme" class="level1">
+<h1>Qualitätsproblem(e)</h1>
+<p>Wir wenden uns jetzt einem Qualitätsproblem zu und zwar der Ansetzung von Verlagsnamen. Dazu schauen wir uns zunächst die <code>host_organization_name</code>-Spalte an, welche den Verlagsnamen beinhaltet.</p>
+<p>Dazu rufen wir unseren data frame auf und übergeben diesen mittels des Pipe-Operators als Input für die <code>select</code>-Funktion. Innerhalb von select geben wir anhand des Spaltennamens an, welche Spalte wir auswählen wollen. Der Pipe-Operator <code>|&gt;</code> nimmt das Objekt auf der linken Seite (hier df) und gibt es an die Funktion auf der rechten Seite weiter. Man kann ihn als “und dann” lesen. Also: nimm df, und dann wähle eine bestimmte Spalte daraus aus. Das Ergebnis ist also eine Tabelle mit nur dieser einen Spalte.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span> </span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(host_organization_name)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,425 × 1
+   host_organization_name                             
+   &lt;chr&gt;                                              
+ 1 Massachusetts Medical Society                      
+ 2 Massachusetts Medical Society                      
+ 3 Elsevier BV                                        
+ 4 Cell Press                                         
+ 5 Elsevier BV                                        
+ 6 American Association for the Advancement of Science
+ 7 Nature Portfolio                                   
+ 8 American Association for the Advancement of Science
+ 9 Multidisciplinary Digital Publishing Institute     
+10 Nature Portfolio                                   
+# ℹ 1,415 more rows</code></pre>
+</div>
+</div>
+<p>Um eine bessere Übersicht über die individuellen Verlagsnamen zu bekommen, wollen wir als nächstes eine Auszählung der Anzahl an Publikationen pro Verlag vornehmen. Dazu nutzen wir die <code>count</code>-Funktion. Dieser übergeben wir die <code>host_organization_name</code>-Spalte anhand derer die Funktion gruppiert und die Anzahl der Zeilen pro Gruppe zählt. Diese Anzahl wird in einer neuen Spalte <em>n</em> dargestellt, welche die Funktion erstellt. Das Ergebnis übergeben wir dann noch mittels des Pipe-Operators an die <code>arrange</code>-Funktion, um mit Hilfe von <code>desc</code> eine absteigende Sortierung anhand der neuen Spalte <em>n</em> zu bekommen.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span> </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">count</span>(host_organization_name) <span class="sc">|&gt;</span> </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 98 × 2
+   host_organization_name                             n
+   &lt;chr&gt;                                          &lt;int&gt;
+ 1 Elsevier BV                                      198
+ 2 &lt;NA&gt;                                             176
+ 3 Figshare (United Kingdom)                        162
+ 4 Wiley                                            118
+ 5 Springer Science+Business Media                  116
+ 6 European Organization for Nuclear Research        98
+ 7 Nature Portfolio                                  60
+ 8 BioMed Central                                    54
+ 9 Multidisciplinary Digital Publishing Institute    38
+10 Springer Nature                                   33
+# ℹ 88 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="publisher-disambiguierung" class="level1">
+<h1>Publisher Disambiguierung</h1>
+<p>In dem Notebook <em>openbib_publishers.qmd</em> haben wir Verlagsdaten aus dem <a href="https://open-bibliometrics.de/">OPENBIB</a>-Projekt als Zuordnungstabelle vorbereitet, anhand derer wir die Verlagsnamen in unserem Datensatz standardisieren wollen. Wir lesen die gespeicherte Datei zunächst mit der <code>read_csv</code>-Funktion ein:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>resolved <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"data/publishers_resolved.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 193 Columns: 4
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (4): child_id, parent_id, child_name, parent_name
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>resolved</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 193 × 4
+   child_id                         parent_id             child_name parent_name
+   &lt;chr&gt;                            &lt;chr&gt;                 &lt;chr&gt;      &lt;chr&gt;      
+ 1 https://openalex.org/P4310319955 https://openalex.org… Academic … Elsevier BV
+ 2 https://openalex.org/P4310320330 https://openalex.org… Adis, Spr… Springer N…
+ 3 https://openalex.org/P4310320061 https://openalex.org… AIP Publi… American I…
+ 4 https://openalex.org/P4310315810 https://openalex.org… Allied Ac… OMICS Publ…
+ 5 https://openalex.org/P4310315809 https://openalex.org… American … Wiley      
+ 6 https://openalex.org/P4310316602 https://openalex.org… American … American P…
+ 7 https://openalex.org/P4320800570 https://openalex.org… American … American P…
+ 8 https://openalex.org/P4310319479 https://openalex.org… American … Seoul Nati…
+ 9 https://openalex.org/P4310314288 https://openalex.org… Archeolog… Czech Acad…
+10 https://openalex.org/P4310316146 https://openalex.org… Associati… American L…
+# ℹ 183 more rows</code></pre>
+</div>
+</div>
+<p>Wir verknüpfen nun die Zuordnungstabelle mit unseren OpenAlex-Daten über einen left join. D.h. für jeden Eintrag in unserem data frame df wird geprüft, ob in der Spalte <code>host_organization</code> (diese enthält die OpenAlex ID des jeweiligen Verlags) in der Zuordnungstabelle als <code>child_id</code> vorkommt. Wenn ja, wird der bisherige Verlagsname (<code>host_organization_name</code>) durch den <code>parent_name</code> aus unserer Zuordnungstabelle ersetzt. Einträge ohne Match behalten ihren ursprünglichen Namen. Wir speichern das Ergebnis in dem Objekt <code>df_metrics</code>:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df_metrics <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>              dplyr<span class="sc">::</span><span class="fu">left_join</span>(resolved <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(child_id, parent_name),</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"host_organization"</span> <span class="ot">=</span> <span class="st">"child_id"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>              dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">host_organization_name =</span> dplyr<span class="sc">::</span><span class="fu">coalesce</span>(parent_name, host_organization_name)) <span class="sc">|&gt;</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>              dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>parent_name)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Um den Effekt der Disambiguierung zu überprüfen, vergleichen wir die Verlagsnamen vor und nach der Zuordnung. Im ersten <code>count()</code> sehen wir die ursprüngliche Verteilung, im zweiten die bereinigte. Dort sollten Imprints und übergeordnete Verlagshäuser nun unter einem einheitlichen Namen zusammengefasst sein.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span> </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">count</span>(host_organization_name) <span class="sc">|&gt;</span> </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 98 × 2
+   host_organization_name                             n
+   &lt;chr&gt;                                          &lt;int&gt;
+ 1 Elsevier BV                                      198
+ 2 &lt;NA&gt;                                             176
+ 3 Figshare (United Kingdom)                        162
+ 4 Wiley                                            118
+ 5 Springer Science+Business Media                  116
+ 6 European Organization for Nuclear Research        98
+ 7 Nature Portfolio                                  60
+ 8 BioMed Central                                    54
+ 9 Multidisciplinary Digital Publishing Institute    38
+10 Springer Nature                                   33
+# ℹ 88 more rows</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>df_metrics <span class="sc">|&gt;</span> </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">count</span>(host_organization_name) <span class="sc">|&gt;</span> </span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 80 × 2
+   host_organization_name                             n
+   &lt;chr&gt;                                          &lt;int&gt;
+ 1 Springer Nature                                  269
+ 2 Elsevier BV                                      204
+ 3 &lt;NA&gt;                                             176
+ 4 Figshare (United Kingdom)                        162
+ 5 Wiley                                            118
+ 6 European Organization for Nuclear Research        98
+ 7 Multidisciplinary Digital Publishing Institute    38
+ 8 Thieme Medical Publishers (Germany)               35
+ 9 Cold Spring Harbor Laboratory                     32
+10 Oxford University Press                           31
+# ℹ 70 more rows</code></pre>
+</div>
+</div>
+<p>Die Qualität der Disambiguierung hängt direkt von der Vollständigkeit und Korrektheit der zugrundeliegenden Daten (OpenAlex, <em>publishers_relation.csv</em>) ab. Verlage, die nicht in der Zuordnungstabelle enthalten sind, behalten ihren ursprünglichen OpenAlex-Namen. Außerdem können Fehler in den OpenAlex-Daten zu fehlenden oder falschen Zuordnungen führen. Es empfiehlt sich daher, das Ergebnis stichprobenartig zu überprüfen und bei auffälligen Zuordnungen die Daten entsprechend zu korrigieren. Auffällig ist z.B., dass es relativ viele fehlende Werte für den <code>host_organization_name</code> gibt. Wir können die Daten prüfen, indem wir nach <code>NA</code>-Werten in der <code>host_organization_name</code>-Spalte filtern:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>df_metrics <span class="sc">|&gt;</span> </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(<span class="fu">is.na</span>(host_organization_name))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 176 × 14
+   authorships doi    publication_year type  is_oa source_display_name source_id
+   &lt;list&gt;      &lt;chr&gt;             &lt;int&gt; &lt;chr&gt; &lt;lgl&gt; &lt;chr&gt;               &lt;chr&gt;    
+ 1 &lt;tibble&gt;    https…             2025 arti… TRUE  JMIR Aging          https://…
+ 2 &lt;tibble&gt;    https…             2025 arti… TRUE  The Journal of Pat… https://…
+ 3 &lt;tibble&gt;    https…             2025 arti… TRUE  EULAR Rheumatology… https://…
+ 4 &lt;tibble&gt;    https…             2025 arti… TRUE  &lt;NA&gt;                &lt;NA&gt;     
+ 5 &lt;tibble&gt;    https…             2025 arti… TRUE  Schizophrenia       https://…
+ 6 &lt;tibble&gt;    https…             2025 arti… FALSE &lt;NA&gt;                &lt;NA&gt;     
+ 7 &lt;tibble&gt;    https…             2025 arti… FALSE &lt;NA&gt;                &lt;NA&gt;     
+ 8 &lt;tibble&gt;    https…             2025 prep… TRUE  medRxiv             https://…
+ 9 &lt;tibble&gt;    https…             2025 arti… TRUE  medRxiv             https://…
+10 &lt;tibble&gt;    https…             2026 arti… TRUE  Alcohol Clinical a… https://…
+# ℹ 166 more rows
+# ℹ 7 more variables: issn_l &lt;chr&gt;, host_organization &lt;chr&gt;,
+#   host_organization_name &lt;chr&gt;, landing_page_url &lt;chr&gt;, pdf_url &lt;chr&gt;,
+#   license &lt;chr&gt;, version &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>Für die hier verwendeten Daten fällt auf, dass z.B. ein Beitrag (https://doi.org/10.1038/s41537-025-00689-9) aus der Zeitschrift “Schizophrenia” (ISSN: 2754-6993) keinen Verlag zugeordnet hat. Über die OpenAlex API (folgende URL im Browser einfügen: https://api.openalex.org/works?filter=doi:10.1038/s41537-025-00689-9) können wir sehen, dass OpenAlex Null-Werte für die Verlags-ID und den Verlagsnamen verzeichnet. Schauen wir uns die Metadaten für selben Beitrag über die Crossref API (folgende URL im Browser einfügen: https://api.crossref.org/works/10.1038/s41537-025-00689-9) sehen wir, dass hier als Verlag “Springer Science and Business Media LLC” angegeben ist. Die Verlagsinformationen sind vermutlich in der data pipeline von OpenAlex verloren gegangen.</p>
+<p>Was wir hier gezeigt haben, stellt einen ersten Ansatz zur Datenbereinigung dar, dieser ist jedoch bei weitem nicht perfekt und löst alle unsere Probleme.</p>
+</section>
+<section id="metriken" class="level1">
+<h1>Metriken</h1>
+<p>Nun wenden wir uns den eigentlichen Auswertungen zu. Wir nutzen dafür den (leicht) bereinigten <code>df_metrics</code> Datensatz.</p>
+<section id="anzahl-an-oa-publikationen-insgesamt" class="level2">
+<h2 class="anchored" data-anchor-id="anzahl-an-oa-publikationen-insgesamt">Anzahl an OA-Publikationen insgesamt</h2>
+<p>Zunächst nutzen wir wieder die <code>count</code>-Funktion, um anhand der <code>is_oa</code>-Spalte zu zählen wie viele Publikationen insgesamt Open Access (OA) verfügbar sind:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>df_metrics <span class="sc">|&gt;</span> </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">count</span>(is_oa)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  is_oa     n
+  &lt;lgl&gt; &lt;int&gt;
+1 FALSE   256
+2 TRUE   1169</code></pre>
+</div>
+</div>
+</section>
+<section id="oa-anteil" class="level2">
+<h2 class="anchored" data-anchor-id="oa-anteil">OA-Anteil</h2>
+<p>Um den prozentualen OA-Anteil zu berechnen, nutzen wir die <code>summarise</code>-Funktion. Diese Funktion fasst den gesamten Datensatz zu einer einzigen Zeile zusammen, indem sie für jede neu definierte Spalte eine Berechnung über alle Zeilen durchführt. Wir definieren dabei drei neue Spalten:</p>
+<ul>
+<li><code>total_articles</code>: die Gesamtanzahl aller Zeilen im Datensatz, berechnet mit der Funktion <code>n()</code> (eine Hilfsfunktion, die einfach die Anzahl der Zeilen zählt)</li>
+<li><code>oa_articles</code>: die Anzahl der OA-Publikationen, berechnet mit der Summenfunktion <code>sum(is_oa, na.rm = TRUE)</code>. Da <code>is_oa</code> eine logische Spalte ist (also nur TRUE oder FALSE enthält), zählt <code>sum()</code> hier alle TRUE-Werte, weil R TRUE intern als 1 und FALSE als 0 behandelt. Das Argument <code>na.rm = TRUE</code> sorgt dafür, dass fehlende Werte (<code>NA</code>) bei der Berechnung ignoriert werden (ohne dieses Argument würde ein einziger fehlender Wert dazu führen, dass das gesamte Ergebnis <code>NA</code> ist)</li>
+<li><code>oa_share</code>: der OA-Anteil in Prozent, berechnet als oa_articles / total_articles * 100. <code>round(..., 2)</code> rundet das Ergebnis auf zwei Nachkommastellen</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>df_metrics <span class="sc">|&gt;</span> </span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_articles =</span> <span class="fu">n</span>(),</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">oa_articles =</span> <span class="fu">sum</span>(is_oa, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">oa_share =</span> <span class="fu">round</span>(oa_articles <span class="sc">/</span> total_articles <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  total_articles oa_articles oa_share
+           &lt;int&gt;       &lt;int&gt;    &lt;dbl&gt;
+1           1425        1169     82.0</code></pre>
+</div>
+</div>
+</section>
+<section id="anzahl-an-oa-publikationen-pro-verlag" class="level2">
+<h2 class="anchored" data-anchor-id="anzahl-an-oa-publikationen-pro-verlag">Anzahl an OA-Publikationen pro Verlag</h2>
+<p>Nun schlüsseln wir die OA-Publikationen nach Verlag auf. Dazu übergeben wir <code>count</code> zwei Spalten: <code>host_organization_name</code> und <code>is_oa</code>. Das Ergebnis zeigt für jeden Verlag getrennt, wie viele Publikationen OA bzw. nicht OA sind:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>df_metrics <span class="sc">|&gt;</span> </span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">count</span>(host_organization_name, is_oa) <span class="sc">|&gt;</span> </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 98 × 3
+   host_organization_name                         is_oa     n
+   &lt;chr&gt;                                          &lt;lgl&gt; &lt;int&gt;
+ 1 Springer Nature                                TRUE    219
+ 2 Figshare (United Kingdom)                      TRUE    162
+ 3 Elsevier BV                                    TRUE    160
+ 4 &lt;NA&gt;                                           TRUE    117
+ 5 Wiley                                          TRUE    112
+ 6 European Organization for Nuclear Research     TRUE     98
+ 7 &lt;NA&gt;                                           FALSE    59
+ 8 Springer Nature                                FALSE    50
+ 9 Elsevier BV                                    FALSE    44
+10 Multidisciplinary Digital Publishing Institute TRUE     38
+# ℹ 88 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="oa-anteil-pro-verlag" class="level2">
+<h2 class="anchored" data-anchor-id="oa-anteil-pro-verlag">OA-Anteil pro Verlag</h2>
+<p>Abschließend berechnen wir den OA-Anteil pro Verlag. Dazu gruppieren wir zunächst mit der <code>group_by</code>-Funktion nach Verlagsnamen (alle nachfolgenden Berechnungen werden dann pro Verlag durchgeführt). Mit der <code>summarise</code>-Funktion berechnen wir dann dieselben Kennzahlen wie oben, diesmal jedoch für jeden Verlag separat. Das Ergebnis wird absteigend nach der Gesamtanzahl der Artikel sortiert, sodass die Verlage, bei denen am meisten publiziert wird, oben stehen:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>df_metrics <span class="sc">|&gt;</span> </span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_by</span>(host_organization_name) <span class="sc">|&gt;</span> </span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_articles =</span> <span class="fu">n</span>(),</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">oa_articles =</span> <span class="fu">sum</span>(is_oa, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">oa_share =</span> <span class="fu">round</span>(oa_articles <span class="sc">/</span> total_articles <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(<span class="fu">desc</span>(total_articles))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 80 × 4
+   host_organization_name                    total_articles oa_articles oa_share
+   &lt;chr&gt;                                              &lt;int&gt;       &lt;int&gt;    &lt;dbl&gt;
+ 1 Springer Nature                                      269         219     81.4
+ 2 Elsevier BV                                          204         160     78.4
+ 3 &lt;NA&gt;                                                 176         117     66.5
+ 4 Figshare (United Kingdom)                            162         162    100  
+ 5 Wiley                                                118         112     94.9
+ 6 European Organization for Nuclear Resear…             98          98    100  
+ 7 Multidisciplinary Digital Publishing Ins…             38          38    100  
+ 8 Thieme Medical Publishers (Germany)                   35           6     17.1
+ 9 Cold Spring Harbor Laboratory                         32          31     96.9
+10 Oxford University Press                               31          22     71.0
+# ℹ 70 more rows</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="add-on-wie-viele-first-authors-von-der-einrichtung-sind-in-den-daten-verzeichnet" class="level1">
+<h1>Add-On: Wie viele first authors von der Einrichtung sind in den Daten verzeichnet</h1>
+<p>Die <code>authorships</code>-Spalte in unserem Datensatz ist eine sogenannte List-Column, d.h. jede Zelle enthält nicht einen einzelnen Wert, sondern eine ganze Tabelle mit allen Autor:innen-Angaben der jeweiligen Publikation (z.B. Name, Position, Affiliation).</p>
+<p>Um die Autor:innen-Angaben auswerten zu können, müssen wir die List-Column zunächst “aufklappen”. Das erledigt die <code>unnest</code>-Funktion aus dem tidyr package. Die Funktion nimmt die verschachtelte Tabelle in jeder Zelle und fügt sie als neue Zeilen in den Datensatz ein – pro Autor:in einer Publikation entsteht also eine eigene Zeile, die verschiedenen Felder (Name, ID, etc.) werden als neue Spalten eingefügt. Anschließend filtern wir auf <code>author_position == "first"</code>, um nur die Erstautor:innen zu behalten. Da eine Publikation mehrere Affiliationen haben kann, ist auch die <code>affiliations</code>-Spalte wieder eine List-Column, die wir erneut mit <code>unnest</code> aufklappen. Das Argument <code>names_sep = "_"</code> sorgt dafür, dass die neuen Spaltennamen mit dem Präfix <code>affiliations_</code> beginnen und so klar von anderen Spalten unterscheidbar sind. Abschließend filtern wir auf die ROR-ID unserer Einrichtung, um nur Erstautor:innen zu behalten, die tatsächlich mit unserer Einrichtung affiliiert sind:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>df_unnest <span class="ot">&lt;-</span> df_metrics <span class="sc">|&gt;</span> </span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(authorships) <span class="sc">|&gt;</span> </span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(author_position <span class="sc">==</span> <span class="st">"first"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(affiliations, <span class="at">names_sep =</span> <span class="st">"_"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(affiliations_ror <span class="sc">==</span> <span class="st">"https://ror.org/032000t02"</span>)</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>df_unnest</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 678 × 25
+   id        display_name orcid author_position is_corresponding affiliations_id
+   &lt;chr&gt;     &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt;           &lt;lgl&gt;            &lt;chr&gt;          
+ 1 https://… M. M. Abdel… http… first           FALSE            https://openal…
+ 2 https://… Nicola Lore… http… first           FALSE            https://openal…
+ 3 https://… Lázaro Adri… http… first           TRUE             https://openal…
+ 4 https://… Stefanie Zo… http… first           FALSE            https://openal…
+ 5 https://… Stefan Pleus http… first           TRUE             https://openal…
+ 6 https://… Hartmut Döh… http… first           TRUE             https://openal…
+ 7 https://… Philipp Sei… http… first           FALSE            https://openal…
+ 8 https://… Serkan Z. D… http… first           TRUE             https://openal…
+ 9 &lt;NA&gt;      Sabrina Web… http… first           TRUE             https://openal…
+10 https://… Nina Parchm… &lt;NA&gt;  first           TRUE             https://openal…
+# ℹ 668 more rows
+# ℹ 19 more variables: affiliations_display_name &lt;chr&gt;, affiliations_ror &lt;chr&gt;,
+#   affiliations_country_code &lt;chr&gt;, affiliations_type &lt;chr&gt;,
+#   affiliations_lineage &lt;chr&gt;, affiliation_raw &lt;chr&gt;, doi &lt;chr&gt;,
+#   publication_year &lt;int&gt;, type &lt;chr&gt;, is_oa &lt;lgl&gt;, source_display_name &lt;chr&gt;,
+#   source_id &lt;chr&gt;, issn_l &lt;chr&gt;, host_organization &lt;chr&gt;,
+#   host_organization_name &lt;chr&gt;, landing_page_url &lt;chr&gt;, pdf_url &lt;chr&gt;, …</code></pre>
+</div>
+</div>
+</section>
+<section id="speichern-der-daten" class="level1">
+<h1>Speichern der Daten</h1>
+<p>Zum Schluss speichern wir noch unsere Daten im CSV-Format mit Hilfe der <code>write_csv</code>-Funktion. Wenn wir <code>df_metrics</code> als CSV speichern, gehen die verschachtelten Tabellen in der <code>authorships</code>-Spalte verloren, weil das CSV-Format keine List-Columns unterstützt (die Spalte wird dann als Text gespeichert und ist nicht mehr sinnvoll nutzbar). Wenn wir die Autor:inneninformationen nutzen wollen, speichern wir am besten <code>df_unnest</code>.</p>
+<p>Der folgende Code speichert beide data frames in separate Dateien:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>readr<span class="sc">::</span><span class="fu">write_csv</span>(df_metrics, <span class="st">"data/df_metrics.csv"</span>)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>readr<span class="sc">::</span><span class="fu">write_csv</span>(df_unnest, <span class="st">"data/df_unnest.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 

@@ -5,15 +5,38 @@ format: html
 
 # Credentials in .Renviron speichern
 
+Die `.Renviron` ist eine einfache Textdatei, die R beim Start automatisch einliest. Man kann dort Umgebungsvariablen im key-value-Format definieren, also nach dem Muster `key = value`. Sie eignet sich besonders für sensible Informationen wie API-Keys, aber auch für R-spezifische Einstellungen. 
+
+Warum sollte man nicht einfach einen API-Key ins Skript schreiben? Schreibt man den eigenen API-Key direkt ins Skript und lädt das Projekt dann z.B. auf GitHub hoch, kann jeder den Key sehen und ggf. auch nutzen. Die `.Renviron`-Datei liegt außerhalb des Projektordners und wird nicht mit hochgeladen, der Key bleibt also privat.
+
+Wie funktioniert der Zugriff auf einen API-Key in der `.Renviron`-Datei? R lädt die `.Renviron` automatisch beim Start und macht alle darin definierten Variablen als Umgebungsvariablen verfügbar. Viele Pakete suchen automatisch im Hintergrund nach bestimmten Umgebungsvariablen und verwenden diese, ohne dass man z.B. den API-Key explizit einer Funktion übergeben muss. Man ruft lediglich die Funktion auf, und sie holt sich z.B. den API-Key selbst.
+
+Zum Bearbeiten der `.Renviron`-Datei verwenden wir folgenden Befehl in der Console, den wir mit Enter ausführen:
+
 ```zsh
 file.edit("~/.Renviron")
 ```
+
+Die `.Renviron`-Datei öffnet sich im Editor und wir fügen unseren API-Key in folgendem Format ein:
 
 ```
 openalexR.apikey = YOUR_API_KEY
 ```
 
-# Libraries laden
+Anschließend speichern wir die `.Renviron`-Datei per Klick auf das Diskettensymbol und können das Fenster schließen.
+
+# Packages installieren und laden
+
+Packages bieten Zusatzfunktionalitäten zu dem, was base R mitbringt. Sie können genutzt werden, nachdem sie einerseits installiert und andererseits geladen wurden. Installieren lädt das package einmalig herunter, laden macht das installierte package für die aktuelle R-Sitzung verfügbar. Packages müssen nur einmal installiert werden, jedoch jedes Mal neu geladen werden, wenn R gestartet wird, denn R lädt nicht automatisch alle installierten packages.
+
+Zum Installieren von packages nutzen wir den `install.packages` Befehl. Wir können den Befehl entweder in einem Code Chunk ausführen, oder in der Console:
+
+```r
+install.packages(c("openalexR","readr","tidyr","dplyr"))
+```
+
+
+Um packages zu laden wird in R der Befehl `library(package_name)` genutzt. Wir laden die zuvor installierten packages:
 
 ```{r}
 library(openalexR)
@@ -25,40 +48,66 @@ library(dplyr)
 
 # OpenAlex-API abfragen
 
+Um die OpenAlex-API abzufragen nutzen wir die `oa_fetch`-Funktion aus dem openalexR package. Diese Funktion erstellt die Abfrage, sendet diese an die API und konvertiert das Ergebnis in ein tibble (eine Art data frame) bzw. data frame. Je nach Entität, die man abfragen möchte, gibt es unterschiedliche Filter, um die Suchergebnisse einzuschränken, siehe <https://docs.ropensci.org/openalexR/articles/Filters.html>. 
+
+Wir möchten Publikationsdaten abfragen, daher konzentrieren wir uns auf die *works*-Entität. Wir identifizieren Publikationen unserer Einrichtungen anhand ihrer ROR-ID. Paratexte (z.B. Titelseiten von Zeitschriften) und retracted Publikationen werden ausgeschlossen. Wir laden für dieses Notebook nur ausgewählte Felder, und zwar: DOI, Autor:innen-Angaben, Erscheinungsjahr, primärer Veröffentlichungsort (z.B. Zeitrschrift) und Publikationstyp. Das Ergebnis wird als tibble gespeichert (ein modernes data frame Format in R). Das `paging = "cursor"` sorgt dafür, dass auch große Ergebnismengen zuverlässig und effizient abgerufen werden.
+
+Wir schränken auf einen relativ kurzen Veröffentlichungszeitraum ein, um die Ergebnismenge klein zu halten. Solltet ihr lokal Daten für ein ganzes Jahr abfragen wollen, so könnt ihr auch über den Filter `publication_year = 2025` auf ein bestimmtes Jahr (hier bspw. 2025) eingrenzen. Wenn ihr keinen der Filter `from_publication_date`, `to_publication_date`, oder `publication_year` nutzt, könnt ihr alle Daten, die mit der ROR-ID verknüpft sind abfragen. 
+
+Der Pfeil (`<-`) ist in R der Zuweisungsoperator. Er weist das Ergebnis der rechten Seite der Variable auf der linken Seite zu. In diesem Fall wird das Ergebnis der Abfrage unter dem Namen *df* gespeichert. Dieses Objekt lässt sich dann über den Namen aufrufen.
+
+
 ```{r}
 df <- openalexR::oa_fetch(
   entity = "works",
-  institutions.ror = "032000t02",
+  institutions.ror = "032000t02", #ROR-ID der Uni Ulm
   is_paratext = FALSE,
   is_retracted = FALSE,
-  abstract = FALSE,
-  from_publication_date = "2026-01-01",
+  from_publication_date = "2025-10-01",
   to_publication_date = "2026-04-01",
-  options = list(select = c("doi", "authorships","publication_year", "primary_location")),
+  options = list(select = c("doi", "authorships","publication_year", "primary_location","type")),
   output = "tibble",
   paging = "cursor"
 )
 ```
 
-# Dataframe explorieren
+# Data frame explorieren
+
+Wir wollen uns nun einen Überblick zu unserem data frame (unser df Objekt) verschaffen. Zunächst rufen wir unseren data frame anhand des Namens auf:
 
 ```{r}
 df
 ```
 
+Standardmäßig werden die ersten 10 Zeilen ausgegeben und es werden so viele Spalten angezeigt, wie auf den Bildschirm passen. Man kann jedoch über den Pfeil im header weitere Spalten anzeigen lassen und über die Seitennavigation bis zu 1.000 Zeilen inspizieren.
+
+Einen kompakteren Überblick über den Datensatz bietet die `glimpse`-Funktion, wir übergeben der Funktion als Argument den Namen unseres data frame:
+
 ```{r}
-glimpse(df)
+dplyr::glimpse(df)
 ```
+
+Die Ausgabe zeigt uns die Anzahl der Zeilen und Spalten, die Namen und Datentypen aller Spalten sowie die ersten paar Werte je Spalte an. Das ist praktisch, um schnell zu verstehen, was im Datensatz steckt.
+
 
 # PAUSE (10 Minuten)
 
 
-# Qualitätsprobleme
+# Qualitätsproblem(e)
+
+Wir wenden uns jetzt einem Qualitätsproblem zu und zwar der Ansetzung von Verlagsnamen. Dazu schauen wir uns zunächst die `host_organization_name`-Spalte an, welche den Verlagsnamen beinhaltet. 
+
+Dazu rufen wir unseren data frame auf und übergeben diesen mittels des Pipe-Operators als Input für die `select`-Funktion. Innerhalb von select geben wir anhand des Spaltennamens an, welche Spalte wir auswählen wollen. Der Pipe-Operator `|>` nimmt das Objekt auf der linken Seite (hier df) und gibt es an die Funktion auf der rechten Seite weiter. Man kann ihn als "und dann" lesen. Also: nimm df, und dann wähle eine bestimmte Spalte daraus aus. Das Ergebnis ist also eine Tabelle mit nur dieser einen Spalte.
+
 
 ```{r}
 df |> 
   dplyr::select(host_organization_name)
 ```
+
+
+Um eine bessere Übersicht über die individuellen Verlagsnamen zu bekommen, wollen wir als nächstes eine Auszählung der Anzahl an Publikationen pro Verlag vornehmen. Dazu nutzen wir die `count`-Funktion. Dieser übergeben wir die `host_organization_name`-Spalte anhand derer die Funktion gruppiert und die Anzahl der Zeilen pro Gruppe zählt. Diese Anzahl wird in einer neuen Spalte *n* dargestellt, welche die Funktion erstellt. Das Ergebnis übergeben wir dann noch mittels des Pipe-Operators an die `arrange`-Funktion, um mit Hilfe von `desc` eine absteigende Sortierung anhand der neuen Spalte *n* zu bekommen.
+
 
 ```{r}
 df |> 
@@ -68,27 +117,27 @@ df |>
 
 # Publisher Disambiguierung
 
+In dem Notebook *openbib_publishers.qmd* haben wir Verlagsdaten aus dem [OPENBIB](https://open-bibliometrics.de/)-Projekt als Zuordnungstabelle vorbereitet, anhand derer wir die Verlagsnamen in unserem Datensatz standardisieren wollen. Wir lesen die gespeicherte Datei zunächst mit der `read_csv`-Funktion ein:
+
 ```{r}
-child_id <- readr::read_csv("data/child_id.csv")
-parent_id <- readr::read_csv("data/parent_id.csv")
+resolved <- readr::read_csv("data/publishers_resolved.csv")
 ```
 
 ```{r}
-child_id
-parent_id
+resolved
 ```
 
-
+Wir verknüpfen nun die Zuordnungstabelle mit unseren OpenAlex-Daten über einen left join. D.h. für jeden Eintrag in unserem data frame df wird geprüft, ob in der Spalte `host_organization` (diese enthält die OpenAlex ID des jeweiligen Verlags) in der Zuordnungstabelle als `child_id` vorkommt. Wenn ja, wird der bisherige Verlagsname (`host_organization_name`) durch den `parent_name` aus unserer Zuordnungstabelle ersetzt. Einträge ohne Match behalten ihren ursprünglichen Namen. Wir speichern das Ergebnis in dem Objekt `df_metrics`:
 
 ```{r}
-df_metrics <- df |>  
-              dplyr::left_join(child_id, by = join_by(host_organization == child_id), na_matches = "never") |> 
-              dplyr::left_join(parent_id, by = join_by(host_organization == parent_id), na_matches = "never") |> 
-              dplyr::mutate(publisher = dplyr::coalesce(publisher, publisher_x)) |> 
-              dplyr::mutate(host_organization_name = dplyr::coalesce(publisher, host_organization_name)) |> 
-              dplyr::select(-c(publisher_x,publisher))
+df_metrics <- df |>
+              dplyr::left_join(resolved |> dplyr::select(child_id, parent_name),
+              by = c("host_organization" = "child_id")) |>
+              dplyr::mutate(host_organization_name = dplyr::coalesce(parent_name, host_organization_name)) |>
+              dplyr::select(-parent_name)
 ```
 
+Um den Effekt der Disambiguierung zu überprüfen, vergleichen wir die Verlagsnamen vor und nach der Zuordnung. Im ersten `count()` sehen wir die ursprüngliche Verteilung, im zweiten die bereinigte. Dort sollten Imprints und übergeordnete Verlagshäuser nun unter einem einheitlichen Namen zusammengefasst sein.
 
 ```{r}
 df |> 
@@ -100,14 +149,26 @@ df_metrics |>
   dplyr::arrange(desc(n))
 ```
 
+Die Qualität der Disambiguierung hängt direkt von der Vollständigkeit und Korrektheit der zugrundeliegenden Daten (OpenAlex, *publishers_relation.csv*) ab. Verlage, die nicht in der Zuordnungstabelle enthalten sind, behalten ihren ursprünglichen OpenAlex-Namen. Außerdem können Fehler in den OpenAlex-Daten zu fehlenden oder falschen Zuordnungen führen. Es empfiehlt sich daher, das Ergebnis stichprobenartig zu überprüfen und bei auffälligen Zuordnungen die Daten entsprechend zu korrigieren. Auffällig ist z.B., dass es relativ viele fehlende Werte für den `host_organization_name` gibt. Wir können die Daten prüfen, indem wir nach `NA`-Werten in der `host_organization_name`-Spalte filtern:
+
 ```{r}
 df_metrics |> 
   dplyr::filter(is.na(host_organization_name))
 ```
 
+
+Für die hier verwendeten Daten fällt auf, dass z.B. ein Beitrag (https://doi.org/10.1038/s41537-025-00689-9) aus der Zeitschrift "Schizophrenia" (ISSN: 2754-6993) keinen Verlag zugeordnet hat. Über die OpenAlex API (folgende URL im Browser einfügen: https://api.openalex.org/works?filter=doi:10.1038/s41537-025-00689-9) können wir sehen, dass OpenAlex Null-Werte für die Verlags-ID und den Verlagsnamen verzeichnet. Schauen wir uns die Metadaten für selben Beitrag über die Crossref API (folgende URL im Browser einfügen: https://api.crossref.org/works/10.1038/s41537-025-00689-9) sehen wir, dass hier als Verlag "Springer Science and Business Media LLC" angegeben ist. Die Verlagsinformationen sind vermutlich in der data pipeline von OpenAlex verloren gegangen. 
+
+
+Was wir hier gezeigt haben, stellt einen ersten Ansatz zur Datenbereinigung dar, dieser ist jedoch bei weitem nicht perfekt und löst alle unsere Probleme. 
+
 # Metriken
 
+Nun wenden wir uns den eigentlichen Auswertungen zu. Wir nutzen dafür den (leicht) bereinigten `df_metrics` Datensatz.
+
 ## Anzahl an OA-Publikationen insgesamt
+
+Zunächst nutzen wir wieder die `count`-Funktion, um anhand der `is_oa`-Spalte zu zählen wie viele Publikationen insgesamt Open Access (OA) verfügbar sind:
 
 ```{r}
 df_metrics |> 
@@ -115,6 +176,12 @@ df_metrics |>
 ```
 
 ## OA-Anteil
+
+Um den prozentualen OA-Anteil zu berechnen, nutzen wir die `summarise`-Funktion. Diese Funktion fasst den gesamten Datensatz zu einer einzigen Zeile zusammen, indem sie für jede neu definierte Spalte eine Berechnung über alle Zeilen durchführt. Wir definieren dabei drei neue Spalten:
+
+- `total_articles`: die Gesamtanzahl aller Zeilen im Datensatz, berechnet mit der Funktion `n()` (eine Hilfsfunktion, die einfach die Anzahl der Zeilen zählt)
+- `oa_articles`: die Anzahl der OA-Publikationen, berechnet mit der Summenfunktion `sum(is_oa, na.rm = TRUE)`. Da `is_oa` eine logische Spalte ist (also nur TRUE oder FALSE enthält), zählt `sum()` hier alle TRUE-Werte, weil R TRUE intern als 1 und FALSE als 0 behandelt. Das Argument `na.rm = TRUE` sorgt dafür, dass fehlende Werte (`NA`) bei der Berechnung ignoriert werden (ohne dieses Argument würde ein einziger fehlender Wert dazu führen, dass das gesamte Ergebnis `NA` ist)
+- `oa_share`: der OA-Anteil in Prozent, berechnet als oa_articles / total_articles * 100. `round(..., 2)` rundet das Ergebnis auf zwei Nachkommastellen
 
 ```{r}
 df_metrics |> 
@@ -128,6 +195,8 @@ df_metrics |>
 
 ## Anzahl an OA-Publikationen pro Verlag
 
+Nun schlüsseln wir die OA-Publikationen nach Verlag auf. Dazu übergeben wir `count` zwei Spalten: `host_organization_name` und `is_oa`. Das Ergebnis zeigt für jeden Verlag getrennt, wie viele Publikationen OA bzw. nicht OA sind:
+
 ```{r}
 df_metrics |> 
   dplyr::count(host_organization_name, is_oa) |> 
@@ -135,6 +204,8 @@ df_metrics |>
 ```
 
 ## OA-Anteil pro Verlag
+
+Abschließend berechnen wir den OA-Anteil pro Verlag. Dazu gruppieren wir zunächst mit der `group_by`-Funktion nach Verlagsnamen (alle nachfolgenden Berechnungen werden dann pro Verlag durchgeführt). Mit der `summarise`-Funktion berechnen wir dann dieselben Kennzahlen wie oben, diesmal jedoch für jeden Verlag separat. Das Ergebnis wird absteigend nach der Gesamtanzahl der Artikel sortiert, sodass die Verlage, bei denen am meisten publiziert wird, oben stehen:
 
 ```{r}
 df_metrics |> 
@@ -150,11 +221,28 @@ df_metrics |>
 
 # Add-On: Wie viele first authors von der Einrichtung sind in den Daten verzeichnet
 
+Die `authorships`-Spalte in unserem Datensatz ist eine sogenannte List-Column, d.h. jede Zelle enthält nicht einen einzelnen Wert, sondern eine ganze Tabelle mit allen Autor:innen-Angaben der jeweiligen Publikation (z.B. Name, Position, Affiliation). 
+
+Um die Autor:innen-Angaben auswerten zu können, müssen wir die List-Column zunächst "aufklappen". Das erledigt die `unnest`-Funktion aus dem tidyr package. Die Funktion nimmt die verschachtelte Tabelle in jeder Zelle und fügt sie als neue Zeilen in den Datensatz ein -- pro Autor:in einer Publikation entsteht also eine eigene Zeile, die verschiedenen Felder (Name, ID, etc.) werden als neue Spalten eingefügt. Anschließend filtern wir auf `author_position == "first"`, um nur die Erstautor:innen zu behalten. Da eine Publikation mehrere Affiliationen haben kann, ist auch die `affiliations`-Spalte wieder eine List-Column, die wir erneut mit `unnest` aufklappen. Das Argument `names_sep = "_"` sorgt dafür, dass die neuen Spaltennamen mit dem Präfix `affiliations_` beginnen und so klar von anderen Spalten unterscheidbar sind. Abschließend filtern wir auf die ROR-ID unserer Einrichtung, um nur Erstautor:innen zu behalten, die tatsächlich mit unserer Einrichtung affiliiert sind:
+
 ```{r}
-df_metrics |> 
+df_unnest <- df_metrics |> 
   tidyr::unnest(authorships) |> 
   dplyr::filter(author_position == "first") |> 
   tidyr::unnest(affiliations, names_sep = "_") |> 
   dplyr::filter(affiliations_ror == "https://ror.org/032000t02")
+
+df_unnest
+```
+
+# Speichern der Daten
+
+Zum Schluss speichern wir noch unsere Daten im CSV-Format mit Hilfe der `write_csv`-Funktion. Wenn wir `df_metrics` als CSV speichern, gehen die verschachtelten Tabellen in der `authorships`-Spalte verloren, weil das CSV-Format keine List-Columns unterstützt (die Spalte wird dann als Text gespeichert und ist nicht mehr sinnvoll nutzbar). Wenn wir die Autor:inneninformationen nutzen wollen, speichern wir am besten `df_unnest`.
+
+Der folgende Code speichert beide data frames in separate Dateien:
+
+```{r}
+readr::write_csv(df_metrics, "data/df_metrics.csv")
+readr::write_csv(df_unnest, "data/df_unnest.csv")
 ```
 

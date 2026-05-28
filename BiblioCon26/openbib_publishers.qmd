@@ -5,7 +5,7 @@ format: html
 
 # Libraries laden
 
-Packages bieten Zusatzfunktionalitäten zu dem, was base R mitbringt. Sie können genutzt werden, nachdem sie einerseits installiert (über den Befehl `install.packages("package_name")`) und andererseits geladen wurden. Um packages zu laden wird in R der Befehl `library(package_name)` genutzt.
+Packages bieten Zusatzfunktionalitäten zu dem, was base R mitbringt. Sie können genutzt werden, nachdem sie einerseits installiert (Packages können in der Console über den Befehl `install.packages("package_name")` installiert werden) und andererseits geladen wurden. Um packages zu laden wird in R der Befehl `library(package_name)` genutzt.
 
 ```{r}
 library(readr)
@@ -23,30 +23,39 @@ openbib_publishers <- readr::read_csv("data/publishers_relation.csv")
 
 # Datenvorbereitung
 
-Die *publishers_relation.csv* bildet auch zeitliche Entwicklungen (z.B. merger) einiger Verlage ab. Für unseren Anwendungsfall wollen wir jedoch nur die aktuellen Namensansetzung der Verlagshäuser (*parent_name*), weshalb wir alle Einträge ausschließen, die einen Eintrag in der Spalte *last_date* aufweisen. 
+Die *publishers_relation.csv* bildet auch zeitliche Entwicklungen (z.B. Fusionen) einiger Verlage ab. Für unseren Anwendungsfall wollen wir jedoch nur die aktuelleste Namensansetzung der Verlagshäuser (*parent_name*), weshalb wir alle Einträge ausschließen, die einen Eintrag in der Spalte *last_date* aufweisen. 
 
 ```{r}
 publishers <- openbib_publishers |> 
   dplyr::filter(is.na(last_date))
 ```
 
-Um die aktuelle Namenansetzung der Verlagshäuser (*parent_name*) mit unseren von OpenAlex abgerufenen Daten zu verknüpfen, nutzen wir die in unserem *publishers* data frame vorhandenen IDs: *child_id* und *parent_id*. Beide IDs entsprechen den OpenAlex-IDs der jeweiligen Verlage oder Imprints. Da wir nicht sicher vorhersagen können, ob ein Verlagseintrag in den OpenAlex-Daten als Imprint (also als child) oder als übergeordnetes Verlagshaus (also als parent) erfasst ist, führen wir die Zuordnung zweistufig durch: Zunächst erstellen wir eine Zuordnungstabelle, die die *child_id* auf den zugehörigen Verlagsnamen (*parent_name*) abbildet. Anschließend erstellen wir eine zweite Tabelle, die die *parent_id* auf den *parent_name* abbildet. Diese beiden Dateien werden separat gespeichert, damit wir bei der späteren Datenverknüpfung beide Möglichkeiten berücksichtigen können, unabhängig davon, ob die OpenAlex-Daten den Verlag als Kind oder als Elternteil erfassen. Dadurch erhöhen wir die Wahrscheinlichkeit, dass möglichst viele Einträge korrekt zugeordnet werden.
+Um die aktuelleste Namenansetzung der Verlagshäuser (*parent_name*) mit unseren von OpenAlex abgerufenen Daten zu verknüpfen, nutzen wir die in unserem *publishers* data frame vorhandenen IDs: *child_id* und *parent_id*. Beide IDs entsprechen den OpenAlex-IDs der jeweiligen Verlage oder Imprints. 
 
-Der folgende R-Code erstellt die beiden Zuordnungstabellen und speichert sie als CSV-Dateien. Die Verwendung der `distinct()` Funktion stellt sicher, dass jede ID nur einmal vorkommt, was die spätere Verknüpfung vereinfacht und doppelte Einträge vermeidet:
+Manche Verlage (*child_name*) sind jedoch nicht direkt dem aktuellsten übergeordneten Verlagshaus zugeordnet, sondern bilden teilweise Zwischenstufen ab. Birkhäuser beispielsweise ist zunächst ein Imprint von Springer Science+Business Media, welches wiederum 2015 zu Springer Nature fusionierte. Um solche transitiven Ketten aufzulösen, durchläuft der folgende Code eine Schleife: In jeder Iteration wird geprüft, ob die aktuelle *parent_id* selbst noch als *child_id* auftaucht. Wenn ja, werden *parent_name* und *parent_id* durch den übergeordneten Wert ersetzt. Das wird so lange wiederholt, bis jedem Verlag das "oberste" Verlagshaus zugeordnet ist.
 
 ```{r}
-child_id <- publishers |> 
-            dplyr::select(child_id, publisher = parent_name) |> 
-            dplyr::distinct()
+resolved <- publishers |>
+  select(child_id, parent_id, child_name, parent_name) |> 
+  filter(!is.na(parent_id)) |> 
+  filter(!is.na(child_id))
 
-readr::write_csv(child_id, "data/child_id.csv")
+for (i in 1:10) {
+resolved <- resolved |>
+    left_join(resolved |> select(y_child_id = child_id, new_parent_id = parent_id, new_parent_name = parent_name),
+              by = c("parent_id" = "y_child_id")) |>
+    mutate(
+      parent_id = coalesce(new_parent_id, parent_id),
+      parent_name = coalesce(new_parent_name, parent_name)
+    ) |>
+    select(child_id, parent_id, child_name, parent_name)
+}
 ```
 
-```{r}
-parent_id <- publishers |> 
-             dplyr::select(parent_id, publisher_x = parent_name) |> 
-             dplyr::filter(!is.na(parent_id)) |> 
-             dplyr::distinct()
 
-readr::write_csv(parent_id, "data/parent_id.csv")
+Der folgende R-Code speichert die fertige Zuordnungstabelle als CSV, damit sie in der Analyse direkt eingelesen werden kann, ohne die Schleife erneut ausführen zu müssen:
+
+```{r}
+resolved |> 
+  readr::write_csv("data/publishers_resolved.csv")
 ```

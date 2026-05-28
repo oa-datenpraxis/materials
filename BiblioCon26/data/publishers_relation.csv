@@ -16,7 +16,7 @@ p_relation_id,child_name,child_id,child_unit,parent_name,parent_id,parent_unit,f
 252,Böhlau Verlag,https://openalex.org/P4310321073,0,Vandenhoeck & Ruprecht,https://openalex.org/P4310320014,41,,
 222,Bohn Stafleu van Loghum,https://openalex.org/P4310319919,0,Springer Science+Business Media,https://openalex.org/P4310319900,79,,
 341,Brill,https://openalex.org/P4310320561,60,,,60,1683-05-17,2024-03-03
-311,Brill,https://openalex.org/P4310320561,60,De Gruyter Brill,https://openalex.org/P4310316602,282,2024-03-24,
+311,Brill,https://openalex.org/P4310320561,60,De Gruyter Brill,https://openalex.org/P4310313990,282,2024-03-24,
 176,British Academy,https://openalex.org/P4310311688,0,Royal Society,https://openalex.org/P4310319787,202,,
 154,Cell Press,https://openalex.org/P4310315673,63,Elsevier BV,https://openalex.org/P4310320990,44,,
 269,Center for the Study of Language & Information,https://openalex.org/P4310316130,0,Stanford University,https://openalex.org/P4310316103,17,,
@@ -30,7 +30,7 @@ p_relation_id,child_name,child_id,child_unit,parent_name,parent_id,parent_unit,f
 343,"Cureus, Inc.",https://openalex.org/P4310316779,132,,,132,2009-01-01,2022-12-31
 7,Czech Botanical Society,https://openalex.org/P4310320098,0,Czech Academy of Sciences,https://openalex.org/P4310314171,133,,
 342,De Gruyter,https://openalex.org/P4310313990,134,,,134,1919-01-01,2024-03-01
-312,De Gruyter,https://openalex.org/P4310313990,134,De Gruyter Brill,https://openalex.org/P4310316602,282,2024-03-24,
+312,De Gruyter,https://openalex.org/P4310313990,134,De Gruyter Brill,https://openalex.org/P4310313990,282,2024-03-24,
 100,De Gruyter Mouton,https://openalex.org/P4310321051,279,De Gruyter,https://openalex.org/P4310313990,134,1977-01-01,
 157,De Gruyter Online,https://openalex.org/P4310314282,280,De Gruyter,https://openalex.org/P4310313990,134,,
 152,De Gruyter Open,https://openalex.org/P4310320322,4,De Gruyter,https://openalex.org/P4310313990,134,2014-01-01,
@@ -47,7 +47,7 @@ p_relation_id,child_name,child_id,child_unit,parent_name,parent_id,parent_unit,f
 199,Faculty of Theology – University of Ljubljana,https://openalex.org/P4310314526,0,University of Ljubljana,https://openalex.org/P4310314477,33,,
 159,Federal Center of Theoretical and Applied Sociology of the Russian Academy of Sciences,https://openalex.org/P4310312666,208,Russian Academy of Sciences,https://openalex.org/P4310320535,208,,
 142,"First Faculty of Medicine, Charles University",https://openalex.org/P4310314351,0,Charles University,https://openalex.org/P4310314207,16,,
-301,Fordham University Press,,52,Fordham University,https://openalex.org/,53,,
+301,Fordham University Press,,52,Fordham University,,53,,
 306,Frontiers in Bioscience,https://openalex.org/P4310320848,147,IMR Press,https://openalex.org/P4310322753,283,,
 246,Georg Thieme Verlag,https://openalex.org/P4310321135,252,Thieme Medical Publishers (Germany),https://openalex.org/P4310320000,227,,
 10,Gorky Institute of World Literature,https://openalex.org/P4310312632,0,Russian Academy of Sciences,https://openalex.org/P4310320535,208,,

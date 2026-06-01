@@ -5,7 +5,7 @@ format: html
 
 # Libraries laden
 
-Packages bieten Zusatzfunktionalitäten zu dem, was base R mitbringt. Sie können genutzt werden, nachdem sie einerseits installiert (Packages können in der Console über den Befehl `install.packages("package_name")` installiert werden) und andererseits geladen wurden. Um packages zu laden wird in R der Befehl `library(package_name)` genutzt.
+Libraries bieten Funktionen, die base R erweitern. Sie können genutzt werden, nachdem sie im ersten Schritt installiert und im zweiten geladen wurden. Libraries werden über den Befehl `install.packages("package_name")` installiert und mit `library(package_name)` geladen.
 
 ```{r}
 library(readr)
@@ -23,7 +23,7 @@ openbib_publishers <- readr::read_csv("data/publishers_relation.csv")
 
 # Datenvorbereitung
 
-Die *publishers_relation.csv* bildet auch zeitliche Entwicklungen (z.B. Fusionen) einiger Verlage ab. Für unseren Anwendungsfall wollen wir jedoch nur die aktuelleste Namensansetzung der Verlagshäuser (*parent_name*), weshalb wir alle Einträge ausschließen, die einen Eintrag in der Spalte *last_date* aufweisen. 
+Die *publishers_relation.csv* bildet auch zeitliche Entwicklungen (z.B. merger) einiger Verlage ab. Für unseren Anwendungsfall wollen wir die aktuelle Namensansetzung der Verlagshäuser (*parent_name*) nutzen, weshalb wir alle Einträge ausschließen, die einen Eintrag in der Spalte *last_date* aufweisen. Diese Einträge haben ein Enddatum und sind darum nicht mehr aktuell.
 
 ```{r}
 publishers <- openbib_publishers |> 
